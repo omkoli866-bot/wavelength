@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chat — Wavelength</title>
+<meta name="description" content="Talk anonymously with a random stranger. No account, no history." />
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="brand"><span class="dot"></span> WAVELENGTH</a>
+  <div class="links">
+    <a href="guidelines.html">Guidelines</a>
+    <a href="privacy.html">Privacy</a>
+  </div>
+</nav>
+
+<div class="app-wrap">
+<div class="app" id="app">
+
+  <!-- Screen 1: Setup -->
+  <div class="card" id="screen-setup">
+    <h1>Find a signal.</h1>
+    <p class="sub">Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.</p>
+
+    <div class="field">
+      <label>You are</label>
+      <div class="choice-row" id="gender-row">
+        <div class="choice" data-g="male">Male</div>
+        <div class="choice" data-g="female">Female</div>
+        <div class="choice" data-g="other">Other</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Talk to</label>
+      <div class="choice-row" id="prefer-row">
+        <div class="choice" data-g="any">Anyone</div>
+        <div class="choice" data-g="male">Male</div>
+        <div class="choice" data-g="female">Female</div>
+      </div>
+    </div>
+
+    <div class="guidelines-box">
+      <input type="checkbox" id="agree" />
+      <p>I'm 18 or older. I won't share personal info, harass anyone, or post illegal content. I understand chats aren't actively moderated in real time and I can report or leave at any point. Read the <a href="guidelines.html" style="color:var(--signal);">full guidelines</a>.</p>
+    </div>
+
+    <button class="btn" id="start-btn" disabled>Start chatting</button>
+    <p class="footnote">Be someone worth talking to.</p>
+  </div>
+
+  <!-- Screen 2: Waiting -->
+  <div class="card" id="screen-waiting" style="display:none;">
+    <div class="tuner">
+      <div class="dial"><span class="freq mono">•••</span></div>
+      <div class="waveform">
+        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="status-text" id="waiting-text">Tuning in to a stranger...</div>
+    </div>
+    <button class="btn secondary" id="cancel-btn">Cancel</button>
+  </div>
+
+  <!-- Screen 3: Chat -->
+  <div class="chat-shell" id="screen-chat">
+    <div class="chat-header">
+      <div class="peer">
+        <div class="avatar" id="peer-avatar">?</div>
+        <div class="meta">
+          <div class="name">Stranger</div>
+          <div class="state" id="peer-state">connected</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="report-btn">Report</button>
+        <button class="icon-btn" id="skip-btn">Skip</button>
+        <button class="icon-btn" id="leave-btn">Leave</button>
+      </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="typing-row" id="typing-row"></div>
+    <div class="composer">
+      <input type="text" id="msg-input" placeholder="Say something..." maxlength="1000" />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!--
+  BACKEND_URL: point this at your live Render backend once it's deployed,
+  e.g. "https://wavelength-backend.onrender.com". Leave as "" while the
+  backend and this page are served from the same origin (e.g. running
+  locally with `npm start`).
+-->
+<script>
+  // Set this to your live Render URL once deployed, e.g.
+  // window.BACKEND_URL = "https://wavelength-backend.onrender.com";
+  window.BACKEND_URL = "";
+</script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script>
+  // Falls back to same-origin (e.g. local `npm start`) if BACKEND_URL is unset.
+  const socket = io(window.BACKEND_URL || undefined);
+
+  let myGender = null;
+  let myPrefer = null;
+
+  const genderRow = document.getElementById('gender-row');
+  const preferRow = document.getElementById('prefer-row');
+  const startBtn = document.getElementById('start-btn');
+  const agreeBox = document.getElementById('agree');
+
+  function setupChoiceRow(row, onPick){
+    row.querySelectorAll('.choice').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        row.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+        onPick(el.dataset.g);
+      });
+    });
+  }
+  setupChoiceRow(genderRow, g => { myGender = g; validate(); });
+  setupChoiceRow(preferRow, g => { myPrefer = g; validate(); });
+  agreeBox.addEventListener('change', validate);
+
+  function validate(){
+    startBtn.disabled = !(myGender && myPrefer && agreeBox.checked);
+  }
+
+  const screenSetup = document.getElementById('screen-setup');
+  const screenWaiting = document.getElementById('screen-waiting');
+  const screenChat = document.getElementById('screen-chat');
+  const app = document.getElementById('app');
+  const waitingText = document.getElementById('waiting-text');
+
+  function showScreen(name){
+    screenSetup.style.display = name === 'setup' ? 'block' : 'none';
+    screenWaiting.style.display = name === 'waiting' ? 'block' : 'none';
+    screenChat.classList.toggle('show', name === 'chat');
+    app.classList.toggle('wide', name === 'chat');
+  }
+
+  startBtn.addEventListener('click', ()=>{
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer });
+    showScreen('waiting');
+    waitingText.textContent = 'Tuning in to a stranger...';
+  });
+
+  document.getElementById('cancel-btn').addEventListener('click', ()=>{
+    socket.emit('leave');
+    showScreen('setup');
+  });
+
+  socket.on('waiting', ()=>{
+    waitingText.textContent = 'No one nearby yet — still searching...';
+  });
+
+  const messagesEl = document.getElementById('messages');
+  const peerAvatar = document.getElementById('peer-avatar');
+  const peerState = document.getElementById('peer-state');
+  const typingRow = document.getElementById('typing-row');
+  const msgInput = document.getElementById('msg-input');
+
+  function addMessage(text, cls){
+    const div = document.createElement('div');
+    div.className = 'msg ' + cls;
+    div.textContent = text;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  socket.on('matched', ({ partnerGender })=>{
+    messagesEl.innerHTML = '';
+    const initial = partnerGender === 'female' ? 'F' : partnerGender === 'male' ? 'M' : '?';
+    peerAvatar.textContent = initial;
+    peerAvatar.className = 'avatar' + (partnerGender === 'female' ? ' female' : '');
+    peerState.textContent = 'connected';
+    addMessage("You're connected with a stranger. Say hi.", 'sys');
+    showScreen('chat');
+    msgInput.focus();
+  });
+
+  function sendMessage(){
+    const text = msgInput.value.trim();
+    if(!text) return;
+    socket.emit('chat-message', text);
+    addMessage(text, 'me');
+    msgInput.value = '';
+    socket.emit('typing', false);
+  }
+
+  document.getElementById('send-btn').addEventListener('click', sendMessage);
+  msgInput.addEventListener('keydown', e=>{
+    if(e.key === 'Enter') sendMessage();
+    else socket.emit('typing', true);
+  });
+  let typingTimeout;
+  msgInput.addEventListener('input', ()=>{
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(()=> socket.emit('typing', false), 1200);
+  });
+
+  socket.on('chat-message', (text)=>{
+    addMessage(text, 'them');
+  });
+
+  socket.on('typing', (isTyping)=>{
+    typingRow.textContent = isTyping ? 'Stranger is typing...' : '';
+  });
+
+  socket.on('partner-left', ()=>{
+    peerState.textContent = 'disconnected';
+    addMessage('Stranger has left the chat.', 'sys');
+  });
+
+  document.getElementById('skip-btn').addEventListener('click', ()=>{
+    socket.emit('skip');
+  });
+  socket.on('ready-to-requeue', ()=>{
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer });
+    showScreen('waiting');
+    waitingText.textContent = 'Finding a new stranger...';
+  });
+
+  document.getElementById('leave-btn').addEventListener('click', ()=>{
+    socket.emit('leave');
+    showScreen('setup');
+  });
+
+  document.getElementById('report-btn').addEventListener('click', ()=>{
+    socket.emit('report');
+    addMessage('You reported this stranger and left the chat.', 'sys');
+    setTimeout(()=> showScreen('setup'), 900);
+  });
+</script>
+</body>
+</html>

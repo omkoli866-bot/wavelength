@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Privacy — Wavelength</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="brand"><span class="dot"></span> WAVELENGTH</a>
+  <div class="links">
+    <a href="guidelines.html">Guidelines</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="chat.html" class="cta">Start chatting</a>
+  </div>
+</nav>
+
+<div class="doc">
+  <h1>Privacy</h1>
+  <p class="updated">Last updated August 2026</p>
+
+  <div class="callout">This page describes the reference implementation as shipped. If you deploy your own copy of this site, update this page to match what your server actually does.</div>
+
+  <h2>What we don't collect</h2>
+  <p>There's no account system. We don't ask for your name, email, or any profile information. The only inputs are the gender you select and who you'd like to talk to — both are used only to find you a match and aren't stored beyond your session.</p>
+
+  <h2>What passes through the server</h2>
+  <p>Messages are relayed live between two matched people over a WebSocket connection. The reference server does not write chat messages to a database or log file — they exist only in memory for the duration of the connection.</p>
+
+  <h2>What is logged</h2>
+  <p>Basic connection metadata (like IP address, for abuse prevention and rate limiting) may be logged by the hosting infrastructure, and reports submitted through the Report button are logged so they can be reviewed. This is standard practice for any live web service and is necessary to respond to abuse.</p>
+
+  <h2>Cookies and tracking</h2>
+  <p>The reference site doesn't use analytics, advertising trackers, or third-party cookies. It uses a session identifier only to keep your WebSocket connection alive.</p>
+
+  <h2>Your choices</h2>
+  <p>Because nothing is tied to an account, there's nothing to delete on request beyond what standard server logs retain. Closing the tab ends your session immediately.</p>
+</div>
+
+<footer class="site-footer">
+  <div class="fbrand">© 2026 Wavelength.</div>
+  <div class="flinks">
+    <a href="index.html">Home</a>
+    <a href="guidelines.html">Guidelines</a>
+  </div>
+</footer>
+
+</body>
+</html>
