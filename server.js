@@ -23,6 +23,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/health', (req, res) => res.send('ok'));
 
+// Real live numbers for the landing page — no fake stats, just what's
+// actually happening on the server right now.
+app.get('/stats', (req, res) => {
+  res.json({ online: io.engine.clientsCount, waiting: waiting.length });
+});
+
 // Friendly aliases
 app.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public', 'chat.html')));
 
