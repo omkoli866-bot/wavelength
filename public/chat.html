@@ -47,6 +47,22 @@
       </div>
     </div>
 
+    <div class="field">
+      <label>Your interests <span class="optional">(optional — we'll try to match you with someone who shares them)</span></label>
+      <div class="interest-row" id="interest-row">
+        <div class="interest-tag" data-i="music">🎧 Music</div>
+        <div class="interest-tag" data-i="gaming">🎮 Gaming</div>
+        <div class="interest-tag" data-i="movies">🎬 Movies</div>
+        <div class="interest-tag" data-i="sports">⚽ Sports</div>
+        <div class="interest-tag" data-i="art">🎨 Art</div>
+        <div class="interest-tag" data-i="books">📚 Books</div>
+        <div class="interest-tag" data-i="anime">🌀 Anime</div>
+        <div class="interest-tag" data-i="tech">💻 Tech</div>
+        <div class="interest-tag" data-i="travel">✈️ Travel</div>
+        <div class="interest-tag" data-i="food">🍜 Food</div>
+      </div>
+    </div>
+
     <div class="guidelines-box">
       <input type="checkbox" id="agree" />
       <p>I'm 18 or older. I won't share personal info, harass anyone, or post illegal content. I understand chats aren't actively moderated in real time and I can report or leave at any point. Read the <a href="guidelines.html" style="color:var(--signal);">full guidelines</a>.</p>
@@ -68,6 +84,12 @@
     <button class="btn secondary" id="cancel-btn">Cancel</button>
   </div>
 
+  <!-- Match flash overlay -->
+  <div class="match-flash" id="match-flash">
+    <div class="flash-burst">SIGNAL LOCKED</div>
+    <div class="flash-shared" id="flash-shared"></div>
+  </div>
+
   <!-- Screen 3: Chat -->
   <div class="chat-shell" id="screen-chat">
     <div class="chat-header">
@@ -79,14 +101,25 @@
         </div>
       </div>
       <div class="header-actions">
+        <button class="icon-btn" id="topic-btn">💡 Topic</button>
         <button class="icon-btn" id="report-btn">Report</button>
         <button class="icon-btn" id="skip-btn">Skip</button>
         <button class="icon-btn" id="leave-btn">Leave</button>
       </div>
     </div>
+    <div class="shared-interests" id="shared-interests-row"></div>
     <div class="messages" id="messages"></div>
     <div class="typing-row" id="typing-row"></div>
+
+    <div class="picker-panel" id="sticker-panel"></div>
+    <div class="picker-panel" id="gif-panel">
+      <input type="text" id="gif-search" class="mono" placeholder="Search GIFs..." />
+      <div class="gif-grid" id="gif-grid"></div>
+    </div>
+
     <div class="composer">
+      <button class="icon-btn picker-toggle" id="sticker-toggle-btn" title="Stickers">😊</button>
+      <button class="icon-btn picker-toggle" id="gif-toggle-btn" title="GIFs">GIF</button>
       <input type="text" id="msg-input" placeholder="Say something..." maxlength="1000" />
       <button id="send-btn">Send</button>
     </div>
@@ -105,6 +138,10 @@
   // Set this to your live Render URL once deployed, e.g.
   // window.BACKEND_URL = "https://wavelength-backend.onrender.com";
   window.BACKEND_URL = "";
+  // Free API key from https://tenor.com/developer/dashboard (Google account,
+  // instant approval, generous free tier). Client-side keys are expected —
+  // Tenor's search API is designed to be called straight from the browser.
+  window.TENOR_KEY = "YOUR_TENOR_API_KEY";
 </script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script>
@@ -113,9 +150,11 @@
 
   let myGender = null;
   let myPrefer = null;
+  let myInterests = [];
 
   const genderRow = document.getElementById('gender-row');
   const preferRow = document.getElementById('prefer-row');
+  const interestRow = document.getElementById('interest-row');
   const startBtn = document.getElementById('start-btn');
   const agreeBox = document.getElementById('agree');
 
@@ -131,6 +170,19 @@
   setupChoiceRow(genderRow, g => { myGender = g; validate(); });
   setupChoiceRow(preferRow, g => { myPrefer = g; validate(); });
   agreeBox.addEventListener('change', validate);
+
+  interestRow.querySelectorAll('.interest-tag').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const i = el.dataset.i;
+      if(myInterests.includes(i)){
+        myInterests = myInterests.filter(x=>x!==i);
+        el.classList.remove('active');
+      } else {
+        myInterests.push(i);
+        el.classList.add('active');
+      }
+    });
+  });
 
   function validate(){
     startBtn.disabled = !(myGender && myPrefer && agreeBox.checked);
@@ -150,7 +202,7 @@
   }
 
   startBtn.addEventListener('click', ()=>{
-    socket.emit('find-partner', { gender: myGender, prefer: myPrefer });
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests });
     showScreen('waiting');
     waitingText.textContent = 'Tuning in to a stranger...';
   });
@@ -170,21 +222,102 @@
   const typingRow = document.getElementById('typing-row');
   const msgInput = document.getElementById('msg-input');
 
-  function addMessage(text, cls){
+  const messageEls = {};
+  function genId(){ return 'm' + Date.now() + Math.random().toString(36).slice(2,8); }
+  const REACTION_EMOJIS = ['👍','❤️','😂','😮'];
+
+  function addMessage(content, cls, kind, id){
     const div = document.createElement('div');
-    div.className = 'msg ' + cls;
-    div.textContent = text;
+    div.className = 'msg ' + cls + (kind ? ' msg-' + kind : '');
+    if(kind === 'gif'){
+      const img = document.createElement('img');
+      img.src = content;
+      img.alt = 'GIF';
+      img.loading = 'lazy';
+      div.appendChild(img);
+    } else if(kind === 'sticker'){
+      div.textContent = content;
+      div.classList.add('sticker-msg');
+    } else if(kind === 'prompt'){
+      div.textContent = '💡 ' + content;
+    } else {
+      div.textContent = content;
+    }
+
+    if(id && kind !== 'prompt'){
+      div.dataset.id = id;
+      messageEls[id] = div;
+
+      const bar = document.createElement('div');
+      bar.className = 'reaction-bar';
+      REACTION_EMOJIS.forEach(emoji=>{
+        const btn = document.createElement('button');
+        btn.textContent = emoji;
+        btn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          socket.emit('reaction', { id, emoji });
+          showReaction(id, emoji);
+        });
+        bar.appendChild(btn);
+      });
+      div.appendChild(bar);
+    }
+
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  socket.on('matched', ({ partnerGender })=>{
+  function showReaction(id, emoji){
+    const el = messageEls[id];
+    if(!el) return;
+    let badge = el.querySelector('.reaction-badge');
+    if(!badge){
+      badge = document.createElement('div');
+      badge.className = 'reaction-badge';
+      el.appendChild(badge);
+    }
+    badge.textContent = emoji;
+  }
+
+  socket.on('reaction', ({ id, emoji })=>{
+    if(id) showReaction(id, emoji);
+  });
+
+  const INTEREST_LABELS = {
+    music:'🎧 Music', gaming:'🎮 Gaming', movies:'🎬 Movies', sports:'⚽ Sports',
+    art:'🎨 Art', books:'📚 Books', anime:'🌀 Anime', tech:'💻 Tech',
+    travel:'✈️ Travel', food:'🍜 Food'
+  };
+  const matchFlash = document.getElementById('match-flash');
+  const flashShared = document.getElementById('flash-shared');
+  const sharedInterestsRow = document.getElementById('shared-interests-row');
+
+  socket.on('matched', ({ partnerGender, shared })=>{
     messagesEl.innerHTML = '';
     const initial = partnerGender === 'female' ? 'F' : partnerGender === 'male' ? 'M' : '?';
     peerAvatar.textContent = initial;
     peerAvatar.className = 'avatar' + (partnerGender === 'female' ? ' female' : '');
     peerState.textContent = 'connected';
     addMessage("You're connected with a stranger. Say hi.", 'sys');
+
+    sharedInterestsRow.innerHTML = '';
+    if(shared && shared.length){
+      sharedInterestsRow.style.display = 'flex';
+      shared.forEach(i=>{
+        const chip = document.createElement('span');
+        chip.className = 'shared-chip';
+        chip.textContent = INTEREST_LABELS[i] || i;
+        sharedInterestsRow.appendChild(chip);
+      });
+      flashShared.textContent = `${shared.length} shared frequenc${shared.length===1?'y':'ies'}: ` + shared.map(i=>INTEREST_LABELS[i]||i).join(' · ');
+    } else {
+      sharedInterestsRow.style.display = 'none';
+      flashShared.textContent = 'New frequency found';
+    }
+
+    matchFlash.classList.add('show');
+    setTimeout(()=> matchFlash.classList.remove('show'), 1000);
+
     showScreen('chat');
     msgInput.focus();
   });
@@ -192,8 +325,9 @@
   function sendMessage(){
     const text = msgInput.value.trim();
     if(!text) return;
-    socket.emit('chat-message', text);
-    addMessage(text, 'me');
+    const id = genId();
+    socket.emit('chat-message', { type: 'text', text, id });
+    addMessage(text, 'me', null, id);
     msgInput.value = '';
     socket.emit('typing', false);
   }
@@ -209,8 +343,104 @@
     typingTimeout = setTimeout(()=> socket.emit('typing', false), 1200);
   });
 
-  socket.on('chat-message', (text)=>{
-    addMessage(text, 'them');
+  socket.on('chat-message', (payload)=>{
+    if(!payload) return;
+    if(payload.type === 'gif') addMessage(payload.url, 'them', 'gif', payload.id);
+    else if(payload.type === 'sticker') addMessage(payload.emoji, 'them', 'sticker', payload.id);
+    else addMessage(payload.text, 'them', null, payload.id);
+  });
+
+  socket.on('icebreaker', (text)=>{
+    addMessage(text, 'sys', 'prompt');
+  });
+
+  const ICEBREAKERS = [
+    "What's a small thing that made you smile this week?",
+    "Cats or dogs, and why is your answer correct?",
+    "What's a song you'd never admit to loving?",
+    "If you could teleport anywhere right now, where?",
+    "What's the last thing you binge-watched?",
+    "Tea or coffee — settle the debate.",
+    "What's a hot take you'll actually defend?",
+    "Best meal you've had this month?",
+  ];
+  document.getElementById('topic-btn').addEventListener('click', ()=>{
+    const t = ICEBREAKERS[Math.floor(Math.random()*ICEBREAKERS.length)];
+    socket.emit('icebreaker', t);
+    addMessage(t, 'sys', 'prompt');
+  });
+
+  // ----- Sticker picker -----
+  const STICKERS = ['😂','😍','🔥','👋','😎','🤯','💀','😭','👀','💯','🎉','😴','🤝','😏','👏','🙌','😅','🥲','😤','🫡','🤔','😈','💬','⚡'];
+  const stickerPanel = document.getElementById('sticker-panel');
+  STICKERS.forEach(emoji=>{
+    const btn = document.createElement('button');
+    btn.className = 'sticker-btn';
+    btn.textContent = emoji;
+    btn.addEventListener('click', ()=>{
+      const id = genId();
+      socket.emit('chat-message', { type: 'sticker', emoji, id });
+      addMessage(emoji, 'me', 'sticker', id);
+      stickerPanel.classList.remove('show');
+    });
+    stickerPanel.appendChild(btn);
+  });
+
+  const stickerToggleBtn = document.getElementById('sticker-toggle-btn');
+  const gifToggleBtn = document.getElementById('gif-toggle-btn');
+  const gifPanel = document.getElementById('gif-panel');
+  stickerToggleBtn.addEventListener('click', ()=>{
+    gifPanel.classList.remove('show');
+    stickerPanel.classList.toggle('show');
+  });
+  gifToggleBtn.addEventListener('click', ()=>{
+    stickerPanel.classList.remove('show');
+    gifPanel.classList.toggle('show');
+    if(gifPanel.classList.contains('show')) searchGifs('trending');
+  });
+
+  // ----- GIF picker (Tenor) -----
+  const gifGrid = document.getElementById('gif-grid');
+  const gifSearch = document.getElementById('gif-search');
+  let gifSearchTimeout;
+
+  async function searchGifs(query){
+    if(!window.TENOR_KEY || window.TENOR_KEY === 'YOUR_TENOR_API_KEY'){
+      gifGrid.innerHTML = '<div class="gif-empty">Add a free Tenor API key in chat.html to enable GIF search.</div>';
+      return;
+    }
+    gifGrid.innerHTML = '<div class="gif-empty">Loading...</div>';
+    const endpoint = query === 'trending'
+      ? `https://tenor.googleapis.com/v2/featured?key=${window.TENOR_KEY}&limit=18`
+      : `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${window.TENOR_KEY}&limit=18`;
+    try{
+      const res = await fetch(endpoint);
+      const data = await res.json();
+      gifGrid.innerHTML = '';
+      (data.results || []).forEach(item=>{
+        const url = item.media_formats?.gif?.url || item.media_formats?.tinygif?.url;
+        if(!url) return;
+        const img = document.createElement('img');
+        img.src = item.media_formats?.tinygif?.url || url;
+        img.loading = 'lazy';
+        img.addEventListener('click', ()=>{
+          const id = genId();
+          socket.emit('chat-message', { type: 'gif', url, id });
+          addMessage(url, 'me', 'gif', id);
+          gifPanel.classList.remove('show');
+        });
+        gifGrid.appendChild(img);
+      });
+    }catch(e){
+      gifGrid.innerHTML = '<div class="gif-empty">Couldn\'t load GIFs right now.</div>';
+    }
+  }
+  gifSearch.addEventListener('input', ()=>{
+    clearTimeout(gifSearchTimeout);
+    gifSearchTimeout = setTimeout(()=>{
+      const q = gifSearch.value.trim();
+      searchGifs(q || 'trending');
+    }, 400);
   });
 
   socket.on('typing', (isTyping)=>{
@@ -226,7 +456,7 @@
     socket.emit('skip');
   });
   socket.on('ready-to-requeue', ()=>{
-    socket.emit('find-partner', { gender: myGender, prefer: myPrefer });
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests });
     showScreen('waiting');
     waitingText.textContent = 'Finding a new stranger...';
   });
