@@ -23,7 +23,9 @@
 </nav>
 
 <header class="hero">
-  <div class="eyebrow">● live &nbsp;—&nbsp; strangers online now</div>
+  <div class="hero-rings" aria-hidden="true"><span></span><span></span><span></span></div>
+
+  <div class="eyebrow"><span class="pulse-dot"></span> <span id="eyebrow-text">strangers online now</span></div>
   <h1>Somewhere out there,<br>someone's on the <span class="accent">same wavelength.</span></h1>
   <p class="lead">Pick who you'd like to talk to, get matched instantly, and have a real conversation with a stranger. No profile, no history, no pressure.</p>
   <div class="actions">
@@ -31,6 +33,8 @@
     <a href="guidelines.html" class="big-btn ghost">Read the guidelines</a>
   </div>
   <p class="fineprint">18+ only · No sign-up required</p>
+
+  <div class="activity-ticker"><span class="line" id="ticker-line"></span></div>
 
   <div class="signal-strip" aria-hidden="true">
     <span style="animation-delay:0s"></span>
@@ -52,17 +56,17 @@
   <div class="kicker">How it works</div>
   <h2>Three steps, no waiting room.</h2>
   <div class="steps">
-    <div class="step-card">
+    <div class="step-card reveal">
       <span class="num">01</span>
       <h3>Set your signal</h3>
       <p>Say who you are and who you'd like to talk to — anyone, or a specific match.</p>
     </div>
-    <div class="step-card">
+    <div class="step-card reveal">
       <span class="num">02</span>
       <h3>Get paired instantly</h3>
       <p>Our matcher connects you with someone compatible the moment they're online too.</p>
     </div>
-    <div class="step-card">
+    <div class="step-card reveal">
       <span class="num">03</span>
       <h3>Talk, skip, or leave</h3>
       <p>Chat as long as you like. Not feeling it? Skip to a new stranger in one tap.</p>
@@ -74,21 +78,21 @@
   <div class="kicker">Built with care</div>
   <h2>Anonymous doesn't mean unsafe.</h2>
   <div class="safety-strip">
-    <div class="safety-item">
+    <div class="safety-item reveal">
       <div class="ico">↺</div>
       <div>
         <h4>Nothing is saved</h4>
         <p>Messages exist only for the length of your chat. Nothing is logged to a profile.</p>
       </div>
     </div>
-    <div class="safety-item">
+    <div class="safety-item reveal">
       <div class="ico">⚑</div>
       <div>
         <h4>Report in one tap</h4>
         <p>See something off? Report and leave instantly — no explanation required.</p>
       </div>
     </div>
-    <div class="safety-item">
+    <div class="safety-item reveal">
       <div class="ico">→</div>
       <div>
         <h4>Skip anytime</h4>
@@ -107,5 +111,64 @@
   </div>
 </footer>
 
+<script>
+  // Set this to your live Render backend URL if this page is hosted
+  // separately from the backend (e.g. on Netlify). Leave "" if served
+  // from the same origin as server.js.
+  const BACKEND_URL = "";
+
+  // Real live counter — pulled from the server's actual connection
+  // count via /stats. If the backend can't be reached, we just leave
+  // the default text alone rather than showing a made-up number.
+  async function pollStats(){
+    try{
+      const res = await fetch((BACKEND_URL || '') + '/stats');
+      const data = await res.json();
+      const el = document.getElementById('eyebrow-text');
+      if (el) el.textContent = `${data.online} ${data.online === 1 ? 'person' : 'people'} online now`;
+    }catch(e){ /* backend unreachable from this origin — keep default copy */ }
+  }
+  pollStats();
+  setInterval(pollStats, 5000);
+
+  // Rotating tagline ticker
+  const tickerLines = [
+    "first come, first paired.",
+    "no waiting rooms. no small talk you didn't ask for.",
+    "say less, mean more.",
+    "not your frequency? skip and retune.",
+  ];
+  const tickerEl = document.getElementById('ticker-line');
+  let tIdx = 0;
+  function rotateTicker(){
+    if(!tickerEl) return;
+    tickerEl.classList.remove('show');
+    setTimeout(()=>{
+      tickerEl.textContent = tickerLines[tIdx % tickerLines.length];
+      tickerEl.classList.add('show');
+      tIdx++;
+    }, 400);
+  }
+  rotateTicker();
+  setInterval(rotateTicker, 3600);
+
+  // Scroll-triggered reveal for step cards and safety items
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting) entry.target.classList.add('in');
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el=> revealObserver.observe(el));
+
+  // Cursor-glow on the primary CTA button
+  document.querySelectorAll('.big-btn.primary').forEach(btn=>{
+    btn.addEventListener('mousemove', (e)=>{
+      const rect = btn.getBoundingClientRect();
+      btn.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
+      btn.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+    });
+  });
+</script>
 </body>
 </html>
