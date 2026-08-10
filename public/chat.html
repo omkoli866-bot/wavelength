@@ -18,6 +18,9 @@
   <div class="links">
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
+    <a href="contacts.html" id="nav-contacts" style="display:none;">Contacts</a>
+    <a href="login.html" id="nav-login">Sign in</a>
+    <a href="#" id="nav-logout" style="display:none;">Log out</a>
   </div>
 </nav>
 
@@ -113,6 +116,7 @@
         </div>
       </div>
       <div class="header-actions">
+        <button class="icon-btn" id="add-contact-btn" style="display:none;">+ Contact</button>
         <button class="icon-btn" id="topic-btn">💡 Topic</button>
         <button class="icon-btn" id="report-btn">Report</button>
         <button class="icon-btn" id="skip-btn">Skip</button>
@@ -156,9 +160,45 @@
   window.TENOR_KEY = "YOUR_TENOR_API_KEY";
 </script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
   // Falls back to same-origin (e.g. local `npm start`) if BACKEND_URL is unset.
-  const socket = io(window.BACKEND_URL || undefined);
+  const API_BASE = window.BACKEND_URL || '';
+
+  // ---- Auth (optional — guests can still use everything above this) ----
+  function getAuth(){
+    const token = localStorage.getItem('wl_auth_token');
+    const username = localStorage.getItem('wl_username');
+    return token && username ? { token, username } : null;
+  }
+  function clearAuth(){
+    localStorage.removeItem('wl_auth_token');
+    localStorage.removeItem('wl_username');
+  }
+
+  const socket = io(window.BACKEND_URL || undefined, {
+    auth: (cb) => cb({ token: (getAuth() || {}).token }),
+  });
+
+  // Reflect signed-in state in the nav, same links/positions every page uses.
+  (function renderNavAuth(){
+    const auth = getAuth();
+    const navLogin = document.getElementById('nav-login');
+    const navLogout = document.getElementById('nav-logout');
+    const navContacts = document.getElementById('nav-contacts');
+    if(auth){
+      if(navLogin){ navLogin.textContent = auth.username; navLogin.href = 'contacts.html'; }
+      if(navLogout) navLogout.style.display = '';
+      if(navContacts) navContacts.style.display = '';
+    }
+    if(navLogout){
+      navLogout.addEventListener('click', (e)=>{
+        e.preventDefault();
+        clearAuth();
+        window.location.reload();
+      });
+    }
+  })();
 
   let myGender = null;
   let myPrefer = 'any'; // free tier is always matched with anyone
@@ -170,6 +210,7 @@
   const startBtn = document.getElementById('start-btn');
   const agreeBox = document.getElementById('agree');
   const premiumModal = document.getElementById('premium-modal');
+  const upgradeBtn = document.getElementById('modal-upgrade-btn');
 
   function setupChoiceRow(row, onPick){
     row.querySelectorAll('.choice').forEach(el=>{
@@ -182,27 +223,102 @@
   }
   setupChoiceRow(genderRow, g => { myGender = g; validate(); });
 
-  // "Talk to" row is premium-gated: only "Anyone" is selectable for free.
+  // ---- Premium status (stored locally, verified server-side on every match) ----
+  function getStoredPremium(){
+    try {
+      const raw = localStorage.getItem('wl_premium');
+      if(!raw) return null;
+      const data = JSON.parse(raw);
+      if(!data.token || !data.expiresAt || Date.now() >= data.expiresAt) return null;
+      return data;
+    } catch { return null; }
+  }
+  function setStoredPremium(token, expiresAt){
+    localStorage.setItem('wl_premium', JSON.stringify({ token, expiresAt }));
+  }
+  function isUnlocked(){
+    return !!getStoredPremium();
+  }
+
+  function unlockPreferRow(){
+    preferRow.classList.remove('locked');
+    preferRow.querySelectorAll('.lock-ico').forEach(el => el.remove());
+    document.querySelector('.premium-hint').textContent = "You're on Premium — pick exactly who you talk to.";
+  }
+
+  if(isUnlocked()) unlockPreferRow();
+
+  // "Talk to" row: locked choices open the upgrade modal; unlocked (premium)
+  // choices behave like a normal selector.
   preferRow.querySelectorAll('.choice').forEach(el=>{
     el.addEventListener('click', ()=>{
-      if(el.dataset.g === 'any'){
-        preferRow.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
-        el.classList.add('active');
-        myPrefer = 'any';
-        validate();
-      } else {
+      const wantsSpecific = el.dataset.g !== 'any';
+      if(wantsSpecific && !isUnlocked()){
         premiumModal.classList.add('show');
+        return;
       }
+      preferRow.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+      el.classList.add('active');
+      myPrefer = el.dataset.g;
+      validate();
     });
   });
 
   document.getElementById('modal-close-btn').addEventListener('click', ()=>{
     premiumModal.classList.remove('show');
   });
-  document.getElementById('modal-upgrade-btn').addEventListener('click', ()=>{
-    // Placeholder: wire this up to your real payments flow.
-    alert('Premium isn\'t live yet — this is just the interface.');
-    premiumModal.classList.remove('show');
+
+  upgradeBtn.addEventListener('click', async ()=>{
+    upgradeBtn.disabled = true;
+    upgradeBtn.textContent = 'Loading...';
+    try {
+      const orderRes = await fetch(`${API_BASE}/api/razorpay/create-order`, { method: 'POST' });
+      const order = await orderRes.json();
+      if(!orderRes.ok || !order.orderId){
+        throw new Error(order.error || 'Could not start checkout.');
+      }
+
+      const rzp = new Razorpay({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Wavelength',
+        description: 'Premium — choose who you talk to',
+        order_id: order.orderId,
+        theme: { color: '#2F6BFF' },
+        handler: async function(response){
+          try {
+            const verifyRes = await fetch(`${API_BASE}/api/razorpay/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(response),
+            });
+            const result = await verifyRes.json();
+            if(verifyRes.ok && result.success){
+              setStoredPremium(result.token, result.expiresAt);
+              unlockPreferRow();
+              premiumModal.classList.remove('show');
+            } else {
+              alert('Payment succeeded but verification failed — please contact support before trying again.');
+            }
+          } catch (e){
+            alert('Something went wrong verifying your payment. Please contact support.');
+          }
+        },
+        modal: {
+          ondismiss: function(){
+            upgradeBtn.disabled = false;
+            upgradeBtn.textContent = 'Upgrade to Premium';
+          },
+        },
+      });
+      rzp.open();
+    } catch (err){
+      alert(err.message || 'Payments are not set up on this server yet.');
+    } finally {
+      upgradeBtn.disabled = false;
+      upgradeBtn.textContent = 'Upgrade to Premium';
+    }
   });
 
   agreeBox.addEventListener('change', validate);
@@ -238,7 +354,7 @@
   }
 
   startBtn.addEventListener('click', ()=>{
-    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests });
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, premiumToken: (getStoredPremium() || {}).token });
     showScreen('waiting');
     waitingText.textContent = 'Tuning in to a stranger...';
   });
@@ -251,6 +367,18 @@
   socket.on('waiting', ()=>{
     waitingText.textContent = 'No one nearby yet — still searching...';
   });
+
+  // Arriving from Contacts with ?with=username skips the setup screen
+  // entirely and tries to reach that specific person directly.
+  (function checkDirectConnect(){
+    const params = new URLSearchParams(window.location.search);
+    const withUser = params.get('with');
+    if(withUser && getAuth()){
+      showScreen('waiting');
+      waitingText.textContent = `Reaching out to ${withUser}...`;
+      socket.emit('direct-connect', { username: withUser });
+    }
+  })();
 
   const messagesEl = document.getElementById('messages');
   const peerAvatar = document.getElementById('peer-avatar');
@@ -328,13 +456,35 @@
   const flashShared = document.getElementById('flash-shared');
   const sharedInterestsRow = document.getElementById('shared-interests-row');
 
-  socket.on('matched', ({ partnerGender, shared })=>{
+  const addContactBtn = document.getElementById('add-contact-btn');
+  let currentPartnerUsername = null;
+
+  socket.on('matched', ({ partnerGender, shared, partnerUsername, history })=>{
     messagesEl.innerHTML = '';
     const initial = partnerGender === 'female' ? 'F' : partnerGender === 'male' ? 'M' : '?';
     peerAvatar.textContent = initial;
     peerAvatar.className = 'avatar' + (partnerGender === 'female' ? ' female' : '');
     peerState.textContent = 'connected';
-    addMessage("You're connected with a stranger. Say hi.", 'sys');
+    currentPartnerUsername = partnerUsername || null;
+    document.querySelector('.peer .name').textContent = partnerUsername || 'Stranger';
+
+    // Only offer "Add Contact" when both sides are logged in — the server
+    // enforces this too, this just avoids showing a button that'd fail.
+    addContactBtn.style.display = (partnerUsername && getAuth()) ? '' : 'none';
+    addContactBtn.disabled = false;
+    addContactBtn.textContent = '+ Contact';
+
+    if(history && history.length){
+      history.forEach(m=>{
+        const cls = m.fromUsername === (getAuth() || {}).username ? 'me' : 'them';
+        if(m.type === 'gif') addMessage(m.url, cls, 'gif', m.id);
+        else if(m.type === 'sticker') addMessage(m.emoji, cls, 'sticker', m.id);
+        else addMessage(m.text, cls, null, m.id);
+      });
+      addMessage(`You're back with ${partnerUsername}. Picking up where you left off.`, 'sys');
+    } else {
+      addMessage(partnerUsername ? `You're connected with ${partnerUsername}. Say hi.` : "You're connected with a stranger. Say hi.", 'sys');
+    }
 
     sharedInterestsRow.innerHTML = '';
     if(shared && shared.length){
@@ -356,6 +506,28 @@
 
     showScreen('chat');
     msgInput.focus();
+  });
+
+  addContactBtn.addEventListener('click', ()=>{
+    addContactBtn.disabled = true;
+    addContactBtn.textContent = 'Adding...';
+    socket.emit('add-contact');
+  });
+
+  socket.on('add-contact-result', ({ success, username, error })=>{
+    if(success){
+      addContactBtn.textContent = '✓ Added';
+      addMessage(`Added ${username} to your contacts. Find them anytime on the Contacts page.`, 'sys');
+    } else {
+      addContactBtn.disabled = false;
+      addContactBtn.textContent = '+ Contact';
+      addMessage(error || 'Could not add contact.', 'sys');
+    }
+  });
+
+  socket.on('contact-offline', ({ username })=>{
+    waitingText.textContent = `${username || 'They'} aren't online right now.`;
+    setTimeout(()=> showScreen('setup'), 1800);
   });
 
   function sendMessage(){
@@ -492,7 +664,7 @@
     socket.emit('skip');
   });
   socket.on('ready-to-requeue', ()=>{
-    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests });
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, premiumToken: (getStoredPremium() || {}).token });
     showScreen('waiting');
     waitingText.textContent = 'Finding a new stranger...';
   });
