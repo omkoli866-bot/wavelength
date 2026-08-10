@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sign in — Wavelength</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <a href="index.html" class="brand"><span class="dot"></span> WAVELENGTH</a>
+  <div class="links">
+    <a href="guidelines.html">Guidelines</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="register.html">Sign up</a>
+    <a href="chat.html" class="cta">Start chatting</a>
+  </div>
+</nav>
+
+<div class="app-wrap">
+<div class="app">
+  <div class="card">
+    <h1>Sign in</h1>
+    <p class="sub">Log back in to see your contacts and pick up old conversations.</p>
+
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="username" class="text-input" placeholder="Your username" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" class="text-input" placeholder="Your password" autocomplete="current-password" />
+    </div>
+
+    <p class="form-error" id="form-error"></p>
+
+    <button class="btn" id="submit-btn">Sign in</button>
+    <p class="footnote">No account yet? <a href="register.html" style="color:var(--signal);">Create one</a></p>
+  </div>
+</div>
+</div>
+
+<script>
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const submitBtn = document.getElementById('submit-btn');
+  const errorEl = document.getElementById('form-error');
+
+  // Set to your live Render URL once deployed, matching chat.html.
+  const API_BASE = "";
+
+  async function submit(){
+    errorEl.textContent = '';
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    if(!username || !password){
+      errorEl.textContent = 'Enter your username and password.';
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in...';
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if(!res.ok){
+        errorEl.textContent = data.error || 'Could not sign in.';
+        return;
+      }
+      localStorage.setItem('wl_auth_token', data.token);
+      localStorage.setItem('wl_username', data.username);
+      window.location.href = 'contacts.html';
+    } catch (err) {
+      errorEl.textContent = 'Something went wrong. Try again.';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
+    }
+  }
+
+  submitBtn.addEventListener('click', submit);
+  passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') submit(); });
+</script>
+</body>
+</html>
