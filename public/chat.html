@@ -39,12 +39,13 @@
     </div>
 
     <div class="field">
-      <label>Talk to</label>
-      <div class="choice-row" id="prefer-row">
-        <div class="choice" data-g="any">Anyone</div>
-        <div class="choice" data-g="male">Male</div>
-        <div class="choice" data-g="female">Female</div>
+      <label>Talk to <span class="premium-badge">Premium</span></label>
+      <div class="choice-row locked" id="prefer-row">
+        <div class="choice locked-choice active" data-g="any">Anyone</div>
+        <div class="choice locked-choice" data-g="male">Male <span class="lock-ico">🔒</span></div>
+        <div class="choice locked-choice" data-g="female">Female <span class="lock-ico">🔒</span></div>
       </div>
+      <p class="premium-hint">Free users are matched with anyone. Upgrade to pick who you talk to.</p>
     </div>
 
     <div class="field">
@@ -70,6 +71,17 @@
 
     <button class="btn" id="start-btn" disabled>Start chatting</button>
     <p class="footnote">Be someone worth talking to.</p>
+  </div>
+
+  <!-- Premium upsell modal -->
+  <div class="modal-backdrop" id="premium-modal">
+    <div class="modal-card">
+      <div class="modal-icon">🔒</div>
+      <h2>Choose who you talk to</h2>
+      <p>Upgrade to Premium to match only with the gender you pick, skip more often, and get priority matching.</p>
+      <button class="btn" id="modal-upgrade-btn">Upgrade to Premium</button>
+      <button class="btn secondary" id="modal-close-btn">Maybe later</button>
+    </div>
   </div>
 
   <!-- Screen 2: Waiting -->
@@ -149,7 +161,7 @@
   const socket = io(window.BACKEND_URL || undefined);
 
   let myGender = null;
-  let myPrefer = null;
+  let myPrefer = 'any'; // free tier is always matched with anyone
   let myInterests = [];
 
   const genderRow = document.getElementById('gender-row');
@@ -157,6 +169,7 @@
   const interestRow = document.getElementById('interest-row');
   const startBtn = document.getElementById('start-btn');
   const agreeBox = document.getElementById('agree');
+  const premiumModal = document.getElementById('premium-modal');
 
   function setupChoiceRow(row, onPick){
     row.querySelectorAll('.choice').forEach(el=>{
@@ -168,7 +181,30 @@
     });
   }
   setupChoiceRow(genderRow, g => { myGender = g; validate(); });
-  setupChoiceRow(preferRow, g => { myPrefer = g; validate(); });
+
+  // "Talk to" row is premium-gated: only "Anyone" is selectable for free.
+  preferRow.querySelectorAll('.choice').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      if(el.dataset.g === 'any'){
+        preferRow.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+        myPrefer = 'any';
+        validate();
+      } else {
+        premiumModal.classList.add('show');
+      }
+    });
+  });
+
+  document.getElementById('modal-close-btn').addEventListener('click', ()=>{
+    premiumModal.classList.remove('show');
+  });
+  document.getElementById('modal-upgrade-btn').addEventListener('click', ()=>{
+    // Placeholder: wire this up to your real payments flow.
+    alert('Premium isn\'t live yet — this is just the interface.');
+    premiumModal.classList.remove('show');
+  });
+
   agreeBox.addEventListener('change', validate);
 
   interestRow.querySelectorAll('.interest-tag').forEach(el=>{
