@@ -513,6 +513,85 @@ h1{
   color:#fff;
 }
 .choice.active[data-g="female"]{border-color:var(--rose); background:rgba(255,122,156,0.14);}
+
+/* Premium gating */
+.premium-badge{
+  display:inline-block;
+  margin-left:8px;
+  padding:2px 8px;
+  border-radius:999px;
+  background:linear-gradient(90deg, var(--amber), #FFE08A);
+  color:#3A2400;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  vertical-align:middle;
+}
+.choice-row.locked .locked-choice[data-g="male"],
+.choice-row.locked .locked-choice[data-g="female"]{
+  opacity:0.55;
+  cursor:pointer;
+  position:relative;
+}
+.choice-row.locked .locked-choice[data-g="male"]:hover,
+.choice-row.locked .locked-choice[data-g="female"]:hover{
+  opacity:0.85;
+  border-color:var(--amber);
+}
+.lock-ico{
+  font-size:11px;
+  margin-left:4px;
+  opacity:0.85;
+}
+.premium-hint{
+  margin:8px 0 0;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.modal-backdrop{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(6,7,11,0.72);
+  align-items:center;
+  justify-content:center;
+  z-index:50;
+  padding:20px;
+}
+.modal-backdrop.show{display:flex;}
+.modal-card{
+  width:100%;
+  max-width:360px;
+  background:linear-gradient(180deg, var(--panel), var(--panel-2));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:28px;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.modal-icon{
+  width:48px;height:48px;
+  border-radius:50%;
+  background:linear-gradient(90deg, var(--amber), #FFE08A);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  margin:0 auto 16px;
+}
+.modal-card h2{
+  font-size:19px;
+  margin:0 0 10px;
+}
+.modal-card p{
+  color:var(--muted);
+  font-size:13.5px;
+  line-height:1.55;
+  margin:0 0 22px;
+}
+.modal-card .btn{margin-bottom:10px;}
+.modal-card .btn.secondary{margin-bottom:0;}
 .guidelines-box{
   display:flex;
   gap:10px;
