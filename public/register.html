@@ -13,7 +13,10 @@
 <body>
 
 <nav class="site-nav">
-  <a href="index.html" class="brand"><span class="dot"></span> WAVELENGTH</a>
+  <div class="nav-left">
+    <a href="index.html" class="brand"><span class="dot"></span> WAVELENGTH</a>
+    <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
+  </div>
   <div class="links">
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
