@@ -18,6 +18,7 @@
   <div class="links">
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
+    <a href="login.html" id="nav-login">Sign in</a>
     <a href="chat.html" class="cta">Start chatting</a>
   </div>
 </nav>
@@ -169,6 +170,18 @@
       btn.style.setProperty('--my', (e.clientY - rect.top) + 'px');
     });
   });
+</script>
+
+<script>
+  (function(){
+    var token = localStorage.getItem('wl_auth_token');
+    var username = localStorage.getItem('wl_username');
+    var navLogin = document.getElementById('nav-login');
+    if(token && username && navLogin){
+      navLogin.textContent = username;
+      navLogin.href = 'contacts.html';
+    }
+  })();
 </script>
 </body>
 </html>
