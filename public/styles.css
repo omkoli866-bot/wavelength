@@ -405,6 +405,61 @@ a{color:inherit;}
   .site-nav .links{gap:12px;}
   .site-nav .links a:not(.cta){display:none;}
 }
+
+/* ===== Mobile phone layout ===== */
+@media (max-width:600px){
+  .site-nav{
+    padding:16px 16px;
+    flex-wrap:nowrap;
+  }
+  .site-nav .brand{ font-size:11px; gap:7px; }
+  .site-nav .brand .dot{ width:6px; height:6px; }
+  .back-btn{ font-size:13px; }
+  .nav-left{ gap:12px; }
+  .site-nav .links{ gap:8px; }
+  .site-nav .links a.cta{ padding:8px 12px; font-size:13px; }
+  /* Account/contacts access still needs to reach mobile users even though
+     Guidelines/Privacy get hidden above — keep this one visible. */
+  .site-nav .links a#nav-login,
+  .site-nav .links a#nav-contacts{ display:inline; font-size:13px; }
+
+  .hero{ padding:40px 16px 28px; }
+  .hero h1{ font-size:32px; }
+  .hero p.lead{ font-size:15px; }
+  .big-btn{ padding:13px 20px; font-size:14.5px; width:100%; text-align:center; }
+  .hero .actions{ flex-direction:column; }
+  .hero .actions a{ width:100%; }
+
+  .section{ padding:36px 16px; }
+  .safety-strip{ padding:20px; }
+  .step-card{ padding:18px; transform:none !important; }
+
+  .app-wrap{ padding:14px 16px 40px; }
+  .card{ padding:20px; }
+  .card h1{ font-size:23px; }
+  .choice-row{ flex-wrap:wrap; }
+  .choice{ min-width:44%; }
+
+  .doc{ padding:12px 16px 44px; }
+  .doc h1{ font-size:27px; }
+
+  /* Chat screen: header buttons wrap to a second row instead of
+     overflowing off the right edge of the phone. */
+  .chat-shell{ height:82vh; }
+  .chat-header{ flex-wrap:wrap; gap:10px; }
+  .header-actions{ flex-wrap:wrap; width:100%; gap:6px; }
+  .icon-btn{ padding:6px 9px; font-size:11.5px; }
+  .messages{ padding:4px 0 10px; }
+  .msg{ max-width:88%; font-size:14px; }
+  .composer input{ padding:12px 14px; font-size:15px; }
+  .composer button{ padding:0 14px; }
+
+  .contact-row{ flex-wrap:wrap; }
+  .contact-status{ max-width:100%; margin-left:0; white-space:normal; }
+
+  .modal-card{ padding:20px; }
+}
+
 .step-card{
   background:linear-gradient(180deg, var(--panel), var(--panel-2));
   border:1px solid var(--line);
