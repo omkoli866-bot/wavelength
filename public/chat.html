@@ -14,11 +14,14 @@
 <body>
 
 <nav class="site-nav">
-  <a href="index.html" class="brand"><span class="dot"></span> WAVELENGTH</a>
+  <div class="nav-left">
+    <a href="index.html" class="brand"><span class="dot"></span> WAVELENGTH</a>
+    <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
+  </div>
   <div class="links">
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
-    <a href="contacts.html" id="nav-contacts" style="display:none;">Contacts</a>
+    <a href="friends.html" id="nav-friends" style="display:none;">Friends</a>
     <a href="login.html" id="nav-login">Sign in</a>
     <a href="#" id="nav-logout" style="display:none;">Log out</a>
   </div>
@@ -116,11 +119,9 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="icon-btn" id="add-contact-btn" style="display:none;">+ Contact</button>
+        <button class="icon-btn" id="add-contact-btn" style="display:none;">+ Friend</button>
         <button class="icon-btn" id="topic-btn">💡 Topic</button>
         <button class="icon-btn" id="report-btn">Report</button>
-        <button class="icon-btn" id="skip-btn">Skip</button>
-        <button class="icon-btn" id="leave-btn">Leave</button>
       </div>
     </div>
     <div class="shared-interests" id="shared-interests-row"></div>
@@ -131,6 +132,13 @@
     <div class="picker-panel" id="gif-panel">
       <input type="text" id="gif-search" class="mono" placeholder="Search GIFs..." />
       <div class="gif-grid" id="gif-grid"></div>
+    </div>
+
+    <!-- Skip/Leave live down here, next to the composer, so they're within
+         easy thumb-reach on mobile instead of stuck up in the header. -->
+    <div class="bottom-actions">
+      <button class="icon-btn" id="skip-btn">⏭ Skip</button>
+      <button class="icon-btn danger-btn" id="leave-btn">✕ Leave</button>
     </div>
 
     <div class="composer">
@@ -185,9 +193,9 @@
     const auth = getAuth();
     const navLogin = document.getElementById('nav-login');
     const navLogout = document.getElementById('nav-logout');
-    const navContacts = document.getElementById('nav-contacts');
+    const navContacts = document.getElementById('nav-friends');
     if(auth){
-      if(navLogin){ navLogin.textContent = auth.username; navLogin.href = 'contacts.html'; }
+      if(navLogin){ navLogin.textContent = auth.username; navLogin.href = 'friends.html'; }
       if(navLogout) navLogout.style.display = '';
       if(navContacts) navContacts.style.display = '';
     }
@@ -368,7 +376,7 @@
     waitingText.textContent = 'No one nearby yet — still searching...';
   });
 
-  // Arriving from Contacts with ?with=username skips the setup screen
+  // Arriving from Friends with ?with=username skips the setup screen
   // entirely and tries to reach that specific person directly.
   (function checkDirectConnect(){
     const params = new URLSearchParams(window.location.search);
@@ -468,11 +476,11 @@
     currentPartnerUsername = partnerUsername || null;
     document.querySelector('.peer .name').textContent = partnerUsername || 'Stranger';
 
-    // Only offer "Add Contact" when both sides are logged in — the server
+    // Only offer "Add Friend" when both sides are logged in — the server
     // enforces this too, this just avoids showing a button that'd fail.
     addContactBtn.style.display = (partnerUsername && getAuth()) ? '' : 'none';
     addContactBtn.disabled = false;
-    addContactBtn.textContent = '+ Contact';
+    addContactBtn.textContent = '+ Friend';
 
     if(history && history.length){
       history.forEach(m=>{
@@ -510,20 +518,62 @@
 
   addContactBtn.addEventListener('click', ()=>{
     addContactBtn.disabled = true;
-    addContactBtn.textContent = 'Adding...';
+    addContactBtn.textContent = 'Request sent';
     socket.emit('add-contact');
+  });
+
+  socket.on('friend-request-sent', ({ toUsername })=>{
+    addMessage(`Friend request sent to ${toUsername}.`, 'sys');
+  });
+
+  // The recipient sees an inline prompt with Accept/Decline right in the
+  // message stream, rather than the friend getting added automatically.
+  socket.on('friend-request', ({ fromUsername })=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'friend-request-msg';
+    wrap.innerHTML = `
+      <p>${escapeHtml(fromUsername)} wants to add you as a friend.</p>
+      <div class="fr-actions">
+        <button class="fr-accept">Accept</button>
+        <button class="fr-decline">Decline</button>
+      </div>
+    `;
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    wrap.querySelector('.fr-accept').addEventListener('click', ()=>{
+      socket.emit('respond-friend-request', { accept: true });
+      wrap.remove();
+    });
+    wrap.querySelector('.fr-decline').addEventListener('click', ()=>{
+      socket.emit('respond-friend-request', { accept: false });
+      wrap.remove();
+      addMessage("You declined the friend request.", 'sys');
+    });
+  });
+
+  socket.on('friend-request-declined', ({ username })=>{
+    addContactBtn.disabled = false;
+    addContactBtn.textContent = '+ Friend';
+    addMessage(`${username} declined your friend request.`, 'sys');
   });
 
   socket.on('add-contact-result', ({ success, username, error })=>{
     if(success){
-      addContactBtn.textContent = '✓ Added';
-      addMessage(`Added ${username} to your contacts. Find them anytime on the Contacts page.`, 'sys');
+      addContactBtn.textContent = '✓ Friends';
+      addMessage(`You and ${username} are now friends. Find them anytime on the Friends page.`, 'sys');
     } else {
       addContactBtn.disabled = false;
-      addContactBtn.textContent = '+ Contact';
-      addMessage(error || 'Could not add contact.', 'sys');
+      addContactBtn.textContent = '+ Friend';
+      addMessage(error || 'Could not add friend.', 'sys');
     }
   });
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
 
   socket.on('contact-offline', ({ username })=>{
     waitingText.textContent = `${username || 'They'} aren't online right now.`;
