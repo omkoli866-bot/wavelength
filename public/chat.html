@@ -149,6 +149,16 @@
     cursor: pointer;
     padding: 4px 6px;
   }
+
+  /* Peer Name Interactive Styling */
+  .peer .name.registered-user {
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+  }
+  .peer .name.registered-user:hover {
+    color: var(--signal, #2F6BFF);
+  }
 </style>
 </head>
 <body>
@@ -161,6 +171,7 @@
   <div class="links">
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
+    <a href="#" id="nav-recent-chats">Recent Chats</a>
     <a href="friends.html" id="nav-friends" style="display:none;">Friends</a>
     <a href="login.html" id="nav-login">Sign in</a>
     <a href="#" id="nav-logout" style="display:none;">Log out</a>
@@ -254,7 +265,7 @@
       <div class="peer">
         <div class="avatar" id="peer-avatar">?</div>
         <div class="meta">
-          <div class="name">Stranger</div>
+          <div class="name" id="peer-name">Stranger</div>
           <div class="state" id="peer-state">connected</div>
         </div>
       </div>
@@ -298,6 +309,27 @@
       <button style="background:none;border:none;color:#aaa;font-size:16px;cursor:pointer;" id="close-reaction-modal">✕</button>
     </div>
     <div class="reaction-sheet-list" id="reaction-sheet-list"></div>
+  </div>
+</div>
+
+<!-- Profile Modal (Registered Users Only) -->
+<div class="modal-backdrop" id="profile-modal">
+  <div class="modal-card">
+    <div class="avatar" id="profile-modal-avatar" style="margin: 0 auto 12px; font-size: 28px; width: 64px; height: 64px; line-height: 64px;">?</div>
+    <h2 id="profile-modal-username">Username</h2>
+    <p class="sub" id="profile-modal-badge">Registered Member</p>
+    <div id="profile-modal-interests" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin: 15px 0;"></div>
+    <button class="btn secondary" id="profile-modal-close">Close</button>
+  </div>
+</div>
+
+<!-- Recent Chats Modal (For Everyone) -->
+<div class="modal-backdrop" id="recent-chats-modal">
+  <div class="modal-card" style="max-height: 80vh; display: flex; flex-direction: column; text-align: left;">
+    <h2>Recent Chats</h2>
+    <p class="sub" style="margin-bottom: 12px;">Your recent conversation sessions stored on this device.</p>
+    <div id="recent-chats-list" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;"></div>
+    <button class="btn secondary" id="recent-modal-close">Close</button>
   </div>
 </div>
 
@@ -522,6 +554,7 @@
   const messagesEl = document.getElementById('messages');
   const peerAvatar = document.getElementById('peer-avatar');
   const peerState = document.getElementById('peer-state');
+  const peerNameEl = document.getElementById('peer-name');
   const typingRow = document.getElementById('typing-row');
   const msgInput = document.getElementById('msg-input');
 
@@ -537,6 +570,7 @@
     }
   });
 
+  // Reaction Details Sheet
   const reactionModal = document.getElementById('reaction-modal');
   const reactionSheetList = document.getElementById('reaction-sheet-list');
   document.getElementById('close-reaction-modal').addEventListener('click', ()=>{
@@ -696,9 +730,7 @@
     const unique = [...new Set(emojis)];
     const isMulti = emojis.length > 1;
 
-    // Toggle multi class for pill vs circle
     badge.classList.toggle('multi', isMulti);
-
     badge.innerHTML = `${unique.join('')}${isMulti ? `<span style="font-weight:600;margin-left:2px;font-size:11px;">${emojis.length}</span>` : ''}`;
     badge.classList.add('show');
   }
@@ -727,6 +759,7 @@
 
   const addContactBtn = document.getElementById('add-contact-btn');
   let currentPartnerUsername = null;
+  let currentPartnerInterests = [];
 
   socket.on('matched', ({ partnerGender, shared, partnerUsername, history })=>{
     messagesEl.innerHTML = '';
@@ -735,7 +768,15 @@
     peerAvatar.className = 'avatar' + (partnerGender === 'female' ? ' female' : '');
     peerState.textContent = 'connected';
     currentPartnerUsername = partnerUsername || null;
-    document.querySelector('.peer .name').textContent = partnerUsername || 'Stranger';
+    currentPartnerInterests = shared || [];
+    
+    peerNameEl.textContent = partnerUsername || 'Stranger';
+    peerNameEl.classList.toggle('registered-user', !!partnerUsername);
+    if(partnerUsername){
+      peerNameEl.title = "View profile";
+    } else {
+      peerNameEl.removeAttribute('title');
+    }
 
     addContactBtn.style.display = (partnerUsername && getAuth()) ? '' : 'none';
     addContactBtn.disabled = false;
@@ -752,6 +793,9 @@
     } else {
       addMessage(partnerUsername ? `You're connected with ${partnerUsername}. Say hi.` : "You're connected with a stranger. Say hi.", 'sys');
     }
+
+    // Save initial session to Recent Chats
+    saveRecentChat(partnerUsername || 'Anonymous Stranger', 'Connected');
 
     sharedInterestsRow.innerHTML = '';
     if(shared && shared.length){
@@ -773,6 +817,71 @@
 
     showScreen('chat');
     msgInput.focus();
+  });
+
+  // Profile Modal logic for registered users
+  const profileModal = document.getElementById('profile-modal');
+  peerNameEl.addEventListener('click', ()=>{
+    if(!currentPartnerUsername) return; // Only for registered accounts
+    document.getElementById('profile-modal-username').textContent = currentPartnerUsername;
+    document.getElementById('profile-modal-avatar').textContent = peerAvatar.textContent;
+    
+    const chipBox = document.getElementById('profile-modal-interests');
+    chipBox.innerHTML = '';
+    if(currentPartnerInterests.length){
+      currentPartnerInterests.forEach(i=>{
+        const span = document.createElement('span');
+        span.className = 'shared-chip';
+        span.textContent = INTEREST_LABELS[i] || i;
+        chipBox.appendChild(span);
+      });
+    }
+    profileModal.classList.add('show');
+  });
+  document.getElementById('profile-modal-close').addEventListener('click', ()=>{
+    profileModal.classList.remove('show');
+  });
+
+  // Recent Chats storage & modal logic
+  function saveRecentChat(name, lastMessage){
+    const history = JSON.parse(localStorage.getItem('wl_recent_chats') || '[]');
+    const filtered = history.filter(item => item.name !== name);
+    filtered.unshift({
+      name: name,
+      lastMessage: lastMessage,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+    localStorage.setItem('wl_recent_chats', JSON.stringify(filtered.slice(0, 15)));
+  }
+
+  const recentModal = document.getElementById('recent-chats-modal');
+  const recentChatsList = document.getElementById('recent-chats-list');
+  document.getElementById('nav-recent-chats').addEventListener('click', (e)=>{
+    e.preventDefault();
+    const history = JSON.parse(localStorage.getItem('wl_recent_chats') || '[]');
+    recentChatsList.innerHTML = '';
+    if(!history.length){
+      recentChatsList.innerHTML = '<p style="color:#888; text-align:center; padding: 20px 0;">No recent conversations found.</p>';
+    } else {
+      history.forEach(c=>{
+        const row = document.createElement('div');
+        row.style.cssText = 'padding: 10px 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);';
+        row.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-weight:600; font-size:14px; margin-bottom:3px;">
+            <span>${escapeHtml(c.name)}</span>
+            <span style="font-size:11px; opacity:0.6;">${c.time}</span>
+          </div>
+          <div style="font-size:12px; opacity:0.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            ${escapeHtml(c.lastMessage)}
+          </div>
+        `;
+        recentChatsList.appendChild(row);
+      });
+    }
+    recentModal.classList.add('show');
+  });
+  document.getElementById('recent-modal-close').addEventListener('click', ()=>{
+    recentModal.classList.remove('show');
   });
 
   addContactBtn.addEventListener('click', ()=>{
@@ -843,6 +952,7 @@
     const id = genId();
     socket.emit('chat-message', { type: 'text', text, id });
     addMessage(text, 'me', null, id);
+    saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', text);
     msgInput.value = '';
     socket.emit('typing', false);
   }
@@ -860,9 +970,16 @@
 
   socket.on('chat-message', (payload)=>{
     if(!payload) return;
-    if(payload.type === 'gif') addMessage(payload.url, 'them', 'gif', payload.id);
-    else if(payload.type === 'sticker') addMessage(payload.emoji, 'them', 'sticker', payload.id);
-    else addMessage(payload.text, 'them', null, payload.id);
+    if(payload.type === 'gif') {
+      addMessage(payload.url, 'them', 'gif', payload.id);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a GIF');
+    } else if(payload.type === 'sticker') {
+      addMessage(payload.emoji, 'them', 'sticker', payload.id);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a sticker ' + payload.emoji);
+    } else {
+      addMessage(payload.text, 'them', null, payload.id);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', payload.text);
+    }
   });
 
   socket.on('icebreaker', (text)=>{
@@ -896,6 +1013,7 @@
       const id = genId();
       socket.emit('chat-message', { type: 'sticker', emoji, id });
       addMessage(emoji, 'me', 'sticker', id);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a sticker ' + emoji);
       stickerPanel.classList.remove('show');
     });
     stickerPanel.appendChild(btn);
@@ -954,6 +1072,7 @@
           const id = genId();
           socket.emit('chat-message', { type: 'gif', url: sendUrl, id });
           addMessage(sendUrl, 'me', 'gif', id);
+          saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a GIF');
           gifPanel.classList.remove('show');
         });
         gifGrid.appendChild(img);
