@@ -519,15 +519,36 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Adds your current chat partner as a contact. Only works while you're
-  // actively paired with them and both of you are logged in.
-  socket.on('add-contact', async () => {
+  // Sends a friend request to your current chat partner — doesn't add them
+  // outright. They have to accept it first (see 'respond-friend-request'
+  // below). Only works while you're actively paired and both logged in.
+  socket.on('add-contact', () => {
     const partnerId = partners.get(socket.id);
     const partnerSocket = partnerId ? io.sockets.sockets.get(partnerId) : null;
     const me = socket.data.user;
     const them = partnerSocket ? partnerSocket.data.user : null;
     if (!me || !them) {
-      io.to(socket.id).emit('add-contact-result', { success: false, error: 'You both need to be logged in to add a contact.' });
+      io.to(socket.id).emit('add-contact-result', { success: false, error: 'You both need to be logged in to add a friend.' });
+      return;
+    }
+    io.to(partnerId).emit('friend-request', { fromUsername: me.username });
+    io.to(socket.id).emit('friend-request-sent', { toUsername: them.username });
+  });
+
+  // The recipient of a friend request accepts or declines it. Deliberately
+  // ignores any id passed by the client — it only ever acts on whoever the
+  // socket is currently paired with server-side, so this can't be used to
+  // add or spoof a request involving someone you're not actively chatting
+  // with.
+  socket.on('respond-friend-request', async ({ accept }) => {
+    const partnerId = partners.get(socket.id);
+    const partnerSocket = partnerId ? io.sockets.sockets.get(partnerId) : null;
+    const me = socket.data.user;
+    const them = partnerSocket ? partnerSocket.data.user : null;
+    if (!me || !them || !partnerId) return;
+
+    if (!accept) {
+      io.to(partnerId).emit('friend-request-declined', { username: me.username });
       return;
     }
     try {
@@ -536,7 +557,7 @@ io.on('connection', (socket) => {
       io.to(partnerId).emit('add-contact-result', { success: true, username: me.username });
     } catch (err) {
       console.error('[add-contact] failed', err);
-      io.to(socket.id).emit('add-contact-result', { success: false, error: 'Could not add contact.' });
+      io.to(socket.id).emit('add-contact-result', { success: false, error: 'Could not add friend.' });
     }
   });
 
