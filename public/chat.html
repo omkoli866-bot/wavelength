@@ -10,6 +10,69 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<style>
+  /* Long-press & Reaction UX styles */
+  .msg {
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .reaction-bar {
+    display: none;
+    position: absolute;
+    top: -38px;
+    background: rgba(20, 20, 25, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 2px 6px;
+    gap: 4px;
+    z-index: 10;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+  }
+  .msg.me .reaction-bar { right: 0; }
+  .msg.them .reaction-bar { left: 0; }
+  .reaction-bar.visible { display: flex; }
+  
+  .reaction-bar button {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: transform 0.1s ease;
+  }
+  .reaction-bar button:hover {
+    transform: scale(1.3);
+  }
+  .reaction-bar button.active {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .reaction-badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .reaction-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 11px;
+    color: #eee;
+    cursor: pointer;
+  }
+  .reaction-chip .reactor-name {
+    font-size: 10px;
+    opacity: 0.75;
+  }
+</style>
 </head>
 <body>
 
@@ -134,8 +197,6 @@
       <div class="gif-grid" id="gif-grid"></div>
     </div>
 
-    <!-- Skip/Leave live down here, next to the composer, so they're within
-         easy thumb-reach on mobile instead of stuck up in the header. -->
     <div class="bottom-actions">
       <button class="icon-btn" id="skip-btn">⏭ Skip</button>
       <button class="icon-btn danger-btn" id="leave-btn">✕ Leave</button>
@@ -152,27 +213,16 @@
 </div>
 </div>
 
-<!--
-  BACKEND_URL: point this at your live Render backend once it's deployed,
-  e.g. "https://wavelength-backend.onrender.com". Leave as "" while the
-  backend and this page are served from the same origin (e.g. running
-  locally with `npm start`).
--->
 <script>
-  // Set this to your live Render URL once deployed, e.g.
-  // window.BACKEND_URL = "https://wavelength-backend.onrender.com";
   window.BACKEND_URL = "";
-  
-  // Giphy API Key
   window.GIPHY_KEY = "alCUd0QZuZMMBi49tgdmy8z05ADVSeea";
 </script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-  // Falls back to same-origin (e.g. local `npm start`) if BACKEND_URL is unset.
   const API_BASE = window.BACKEND_URL || '';
 
-  // ---- Auth (optional — guests can still use everything above this) ----
+  // ---- Auth ----
   function getAuth(){
     const token = localStorage.getItem('wl_auth_token');
     const username = localStorage.getItem('wl_username');
@@ -187,7 +237,6 @@
     auth: (cb) => cb({ token: (getAuth() || {}).token }),
   });
 
-  // Reflect signed-in state in the nav, same links/positions every page uses.
   (function renderNavAuth(){
     const auth = getAuth();
     const navLogin = document.getElementById('nav-login');
@@ -208,7 +257,7 @@
   })();
 
   let myGender = null;
-  let myPrefer = 'any'; // free tier is always matched with anyone
+  let myPrefer = 'any';
   let myInterests = [];
 
   const genderRow = document.getElementById('gender-row');
@@ -230,7 +279,6 @@
   }
   setupChoiceRow(genderRow, g => { myGender = g; validate(); });
 
-  // ---- Premium status (stored locally, verified server-side on every match) ----
   function getStoredPremium(){
     try {
       const raw = localStorage.getItem('wl_premium');
@@ -255,8 +303,6 @@
 
   if(isUnlocked()) unlockPreferRow();
 
-  // "Talk to" row: locked choices open the upgrade modal; unlocked (premium)
-  // choices behave like a normal selector.
   preferRow.querySelectorAll('.choice').forEach(el=>{
     el.addEventListener('click', ()=>{
       const wantsSpecific = el.dataset.g !== 'any';
@@ -375,8 +421,6 @@
     waitingText.textContent = 'No one nearby yet — still searching...';
   });
 
-  // Arriving from Friends with ?with=username skips the setup screen
-  // entirely and tries to reach that specific person directly.
   (function checkDirectConnect(){
     const params = new URLSearchParams(window.location.search);
     const withUser = params.get('with');
@@ -394,8 +438,17 @@
   const msgInput = document.getElementById('msg-input');
 
   const messageEls = {};
+  // Store message reactions: { [msgId]: { [reactorName]: emoji } }
+  const messageReactions = {}; 
   function genId(){ return 'm' + Date.now() + Math.random().toString(36).slice(2,8); }
   const REACTION_EMOJIS = ['👍','❤️','😂','😮'];
+
+  // Global handler to dismiss open reaction bars
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.reaction-bar') && !e.target.closest('.msg')){
+      document.querySelectorAll('.reaction-bar.visible').forEach(bar => bar.classList.remove('visible'));
+    }
+  });
 
   function addMessage(content, cls, kind, id){
     const div = document.createElement('div');
@@ -418,40 +471,118 @@
     if(id && kind !== 'prompt'){
       div.dataset.id = id;
       messageEls[id] = div;
+      messageReactions[id] = {};
 
       const bar = document.createElement('div');
       bar.className = 'reaction-bar';
+
       REACTION_EMOJIS.forEach(emoji=>{
         const btn = document.createElement('button');
         btn.textContent = emoji;
+        btn.dataset.emoji = emoji;
         btn.addEventListener('click', (e)=>{
           e.stopPropagation();
-          socket.emit('reaction', { id, emoji });
-          showReaction(id, emoji);
+          const auth = getAuth();
+          const myName = auth ? auth.username : 'You';
+          const currentEmoji = messageReactions[id][myName];
+
+          if(currentEmoji === emoji){
+            // Toggle off/remove reaction
+            delete messageReactions[id][myName];
+            btn.classList.remove('active');
+            socket.emit('reaction', { id, emoji: null, user: myName });
+          } else {
+            // Set reaction
+            messageReactions[id][myName] = emoji;
+            bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            socket.emit('reaction', { id, emoji, user: myName });
+          }
+          renderReactions(id);
+          bar.classList.remove('visible');
         });
         bar.appendChild(btn);
       });
       div.appendChild(bar);
+
+      // Container for displaying reactions with names
+      const badgeList = document.createElement('div');
+      badgeList.className = 'reaction-badge-list';
+      div.appendChild(badgeList);
+
+      // --- Hold / Long-Press Logic to trigger reaction bar ---
+      let pressTimer;
+      const startPress = (e) => {
+        pressTimer = setTimeout(()=>{
+          document.querySelectorAll('.reaction-bar.visible').forEach(b => b.classList.remove('visible'));
+          bar.classList.add('visible');
+        }, 450); // 450ms hold
+      };
+      const cancelPress = () => clearTimeout(pressTimer);
+
+      div.addEventListener('touchstart', startPress, { passive: true });
+      div.addEventListener('touchend', cancelPress);
+      div.addEventListener('touchmove', cancelPress);
+      div.addEventListener('mousedown', startPress);
+      div.addEventListener('mouseup', cancelPress);
+      div.addEventListener('mouseleave', cancelPress);
+      
+      // Right click alternative for desktop
+      div.addEventListener('contextmenu', (e)=>{
+        e.preventDefault();
+        document.querySelectorAll('.reaction-bar.visible').forEach(b => b.classList.remove('visible'));
+        bar.classList.add('visible');
+      });
     }
 
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  function showReaction(id, emoji){
+  function renderReactions(id){
     const el = messageEls[id];
     if(!el) return;
-    let badge = el.querySelector('.reaction-badge');
-    if(!badge){
-      badge = document.createElement('div');
-      badge.className = 'reaction-badge';
-      el.appendChild(badge);
-    }
-    badge.textContent = emoji;
+    const badgeList = el.querySelector('.reaction-badge-list');
+    if(!badgeList) return;
+
+    badgeList.innerHTML = '';
+    const reactions = messageReactions[id] || {};
+
+    Object.entries(reactions).forEach(([user, emoji])=>{
+      if(!emoji) return;
+      const chip = document.createElement('div');
+      chip.className = 'reaction-chip';
+      chip.innerHTML = `${emoji} <span class="reactor-name">${escapeHtml(user)}</span>`;
+      
+      // Click own badge to remove
+      const auth = getAuth();
+      const myName = auth ? auth.username : 'You';
+      if(user === myName || user === 'You'){
+        chip.title = "Click to remove";
+        chip.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          delete messageReactions[id][myName];
+          const bar = el.querySelector('.reaction-bar');
+          if(bar) bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          socket.emit('reaction', { id, emoji: null, user: myName });
+          renderReactions(id);
+        });
+      }
+      badgeList.appendChild(chip);
+    });
   }
 
-  socket.on('reaction', ({ id, emoji })=>{
-    if(id) showReaction(id, emoji);
+  socket.on('reaction', ({ id, emoji, user })=>{
+    if(!id || !messageReactions[id]) return;
+    const partnerName = currentPartnerUsername || 'Stranger';
+    const reactor = user || partnerName;
+
+    if(!emoji){
+      delete messageReactions[id][reactor];
+    } else {
+      messageReactions[id][reactor] = emoji;
+    }
+    renderReactions(id);
   });
 
   const INTEREST_LABELS = {
@@ -475,8 +606,6 @@
     currentPartnerUsername = partnerUsername || null;
     document.querySelector('.peer .name').textContent = partnerUsername || 'Stranger';
 
-    // Only offer "Add Friend" when both sides are logged in — the server
-    // enforces this too, this just avoids showing a button that'd fail.
     addContactBtn.style.display = (partnerUsername && getAuth()) ? '' : 'none';
     addContactBtn.disabled = false;
     addContactBtn.textContent = '+ Friend';
@@ -525,8 +654,6 @@
     addMessage(`Friend request sent to ${toUsername}.`, 'sys');
   });
 
-  // The recipient sees an inline prompt with Accept/Decline right in the
-  // message stream, rather than the friend getting added automatically.
   socket.on('friend-request', ({ fromUsername })=>{
     const wrap = document.createElement('div');
     wrap.className = 'friend-request-msg';
