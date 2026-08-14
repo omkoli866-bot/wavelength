@@ -11,66 +11,133 @@
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
-  /* Long-press & Reaction UX styles */
+  /* WhatsApp-style Reaction System */
   .msg {
     position: relative;
     user-select: none;
     -webkit-user-select: none;
+    cursor: pointer;
   }
+  
+  /* Floating emoji bar on hold */
   .reaction-bar {
     display: none;
     position: absolute;
-    top: -38px;
-    background: rgba(20, 20, 25, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 20px;
-    padding: 2px 6px;
-    gap: 4px;
-    z-index: 10;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    backdrop-filter: blur(8px);
+    top: -46px;
+    background: #232d36;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 4px 8px;
+    gap: 8px;
+    z-index: 50;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    animation: popUp 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
   .msg.me .reaction-bar { right: 0; }
   .msg.them .reaction-bar { left: 0; }
-  .reaction-bar.visible { display: flex; }
-  
+  .reaction-bar.visible { display: flex; align-items: center; }
+
+  @keyframes popUp {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
   .reaction-bar button {
     background: transparent;
     border: none;
-    font-size: 16px;
+    font-size: 20px;
     cursor: pointer;
-    padding: 4px;
+    padding: 2px 4px;
     border-radius: 50%;
-    transition: transform 0.1s ease;
+    transition: transform 0.12s ease;
+    line-height: 1;
   }
   .reaction-bar button:hover {
-    transform: scale(1.3);
+    transform: scale(1.35);
   }
   .reaction-bar button.active {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
   }
 
-  .reaction-badge-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 4px;
-  }
-  .reaction-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  /* WhatsApp-style bottom badge on message */
+  .wa-reaction-badge {
+    display: none;
+    position: absolute;
+    bottom: -10px;
+    background: #1f2c34;
+    border: 1px solid #111b21;
     border-radius: 12px;
-    padding: 2px 6px;
+    padding: 1px 6px;
     font-size: 11px;
-    color: #eee;
+    color: #e9edef;
+    align-items: center;
+    gap: 3px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     cursor: pointer;
+    z-index: 5;
   }
-  .reaction-chip .reactor-name {
-    font-size: 10px;
-    opacity: 0.75;
+  .msg.me .wa-reaction-badge { right: 8px; }
+  .msg.them .wa-reaction-badge { left: 8px; }
+  .wa-reaction-badge.show { display: inline-flex; }
+  .wa-reaction-badge:hover { transform: scale(1.05); }
+
+  /* WhatsApp-style Reaction Info Sheet */
+  .reaction-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .reaction-modal-backdrop.show { display: flex; }
+  .reaction-sheet {
+    background: #111b21;
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    max-width: 420px;
+    padding: 16px 20px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.6);
+  }
+  .reaction-sheet-header {
+    font-weight: 600;
+    font-size: 15px;
+    color: #e9edef;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .reaction-sheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .reaction-sheet-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+  }
+  .reaction-sheet-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #e9edef;
+    font-size: 14px;
+  }
+  .reaction-sheet-remove {
+    background: transparent;
+    border: none;
+    color: #f15c6d;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 6px;
   }
 </style>
 </head>
@@ -211,6 +278,17 @@
   </div>
 
 </div>
+</div>
+
+<!-- WhatsApp Reaction Details Sheet -->
+<div class="reaction-modal-backdrop" id="reaction-modal">
+  <div class="reaction-sheet">
+    <div class="reaction-sheet-header">
+      <span>Reactions</span>
+      <button style="background:none;border:none;color:#aaa;font-size:16px;cursor:pointer;" id="close-reaction-modal">✕</button>
+    </div>
+    <div class="reaction-sheet-list" id="reaction-sheet-list"></div>
+  </div>
 </div>
 
 <script>
@@ -438,17 +516,67 @@
   const msgInput = document.getElementById('msg-input');
 
   const messageEls = {};
-  // Store message reactions: { [msgId]: { [reactorName]: emoji } }
   const messageReactions = {}; 
   function genId(){ return 'm' + Date.now() + Math.random().toString(36).slice(2,8); }
   const REACTION_EMOJIS = ['👍','❤️','😂','😮'];
 
-  // Global handler to dismiss open reaction bars
+  // Global dismiss for open reaction bars
   document.addEventListener('click', (e)=>{
     if(!e.target.closest('.reaction-bar') && !e.target.closest('.msg')){
       document.querySelectorAll('.reaction-bar.visible').forEach(bar => bar.classList.remove('visible'));
     }
   });
+
+  const reactionModal = document.getElementById('reaction-modal');
+  const reactionSheetList = document.getElementById('reaction-sheet-list');
+  document.getElementById('close-reaction-modal').addEventListener('click', ()=>{
+    reactionModal.classList.remove('show');
+  });
+  reactionModal.addEventListener('click', (e)=>{
+    if(e.target === reactionModal) reactionModal.classList.remove('show');
+  });
+
+  function openReactionSheet(id){
+    const reactions = messageReactions[id] || {};
+    reactionSheetList.innerHTML = '';
+    const auth = getAuth();
+    const myName = auth ? auth.username : 'You';
+
+    Object.entries(reactions).forEach(([user, emoji])=>{
+      const item = document.createElement('div');
+      item.className = 'reaction-sheet-item';
+      
+      const isMe = (user === myName || user === 'You');
+      item.innerHTML = `
+        <div class="reaction-sheet-user">
+          <span style="font-size:18px;">${emoji}</span>
+          <span>${escapeHtml(user)} ${isMe ? '(You)' : ''}</span>
+        </div>
+      `;
+
+      if(isMe){
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'reaction-sheet-remove';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', ()=>{
+          delete messageReactions[id][myName];
+          const el = messageEls[id];
+          if(el){
+            const bar = el.querySelector('.reaction-bar');
+            if(bar) bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          }
+          socket.emit('reaction', { id, emoji: null, user: myName });
+          renderReactions(id);
+          reactionModal.classList.remove('show');
+        });
+        item.appendChild(removeBtn);
+      }
+
+      reactionSheetList.appendChild(item);
+    });
+
+    reactionModal.classList.add('show');
+  }
 
   function addMessage(content, cls, kind, id){
     const div = document.createElement('div');
@@ -487,12 +615,10 @@
           const currentEmoji = messageReactions[id][myName];
 
           if(currentEmoji === emoji){
-            // Toggle off/remove reaction
             delete messageReactions[id][myName];
             btn.classList.remove('active');
             socket.emit('reaction', { id, emoji: null, user: myName });
           } else {
-            // Set reaction
             messageReactions[id][myName] = emoji;
             bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -505,29 +631,32 @@
       });
       div.appendChild(bar);
 
-      // Container for displaying reactions with names
-      const badgeList = document.createElement('div');
-      badgeList.className = 'reaction-badge-list';
-      div.appendChild(badgeList);
+      // WhatsApp Reaction Badge attached to bottom of bubble
+      const badge = document.createElement('div');
+      badge.className = 'wa-reaction-badge';
+      badge.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        openReactionSheet(id);
+      });
+      div.appendChild(badge);
 
-      // --- Hold / Long-Press Logic to trigger reaction bar ---
+      // --- Hold to Open Reaction Bar ---
       let pressTimer;
-      const startPress = (e) => {
+      const startHold = () => {
         pressTimer = setTimeout(()=>{
           document.querySelectorAll('.reaction-bar.visible').forEach(b => b.classList.remove('visible'));
           bar.classList.add('visible');
-        }, 450); // 450ms hold
+        }, 400); // 400ms hold
       };
-      const cancelPress = () => clearTimeout(pressTimer);
+      const cancelHold = () => clearTimeout(pressTimer);
 
-      div.addEventListener('touchstart', startPress, { passive: true });
-      div.addEventListener('touchend', cancelPress);
-      div.addEventListener('touchmove', cancelPress);
-      div.addEventListener('mousedown', startPress);
-      div.addEventListener('mouseup', cancelPress);
-      div.addEventListener('mouseleave', cancelPress);
+      div.addEventListener('touchstart', startHold, { passive: true });
+      div.addEventListener('touchend', cancelHold);
+      div.addEventListener('touchmove', cancelHold);
+      div.addEventListener('mousedown', startHold);
+      div.addEventListener('mouseup', cancelHold);
+      div.addEventListener('mouseleave', cancelHold);
       
-      // Right click alternative for desktop
       div.addEventListener('contextmenu', (e)=>{
         e.preventDefault();
         document.querySelectorAll('.reaction-bar.visible').forEach(b => b.classList.remove('visible'));
@@ -542,34 +671,22 @@
   function renderReactions(id){
     const el = messageEls[id];
     if(!el) return;
-    const badgeList = el.querySelector('.reaction-badge-list');
-    if(!badgeList) return;
+    const badge = el.querySelector('.wa-reaction-badge');
+    if(!badge) return;
 
-    badgeList.innerHTML = '';
     const reactions = messageReactions[id] || {};
+    const emojis = Object.values(reactions).filter(Boolean);
 
-    Object.entries(reactions).forEach(([user, emoji])=>{
-      if(!emoji) return;
-      const chip = document.createElement('div');
-      chip.className = 'reaction-chip';
-      chip.innerHTML = `${emoji} <span class="reactor-name">${escapeHtml(user)}</span>`;
-      
-      // Click own badge to remove
-      const auth = getAuth();
-      const myName = auth ? auth.username : 'You';
-      if(user === myName || user === 'You'){
-        chip.title = "Click to remove";
-        chip.addEventListener('click', (e)=>{
-          e.stopPropagation();
-          delete messageReactions[id][myName];
-          const bar = el.querySelector('.reaction-bar');
-          if(bar) bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-          socket.emit('reaction', { id, emoji: null, user: myName });
-          renderReactions(id);
-        });
-      }
-      badgeList.appendChild(chip);
-    });
+    if(emojis.length === 0){
+      badge.classList.remove('show');
+      badge.innerHTML = '';
+      return;
+    }
+
+    // Display unique emoji icons + total count (like WhatsApp)
+    const unique = [...new Set(emojis)];
+    badge.innerHTML = `${unique.join('')} <span style="font-weight:600;margin-left:2px;">${emojis.length > 1 ? emojis.length : ''}</span>`;
+    badge.classList.add('show');
   }
 
   socket.on('reaction', ({ id, emoji, user })=>{
