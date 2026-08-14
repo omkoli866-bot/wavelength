@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Contacts — Wavelength</title>
+<title>Friends — Wavelength</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,10 @@
 <body>
 
 <nav class="site-nav">
-  <a href="index.html" class="brand"><span class="dot"></span> WAVELENGTH</a>
+  <div class="nav-left">
+    <a href="index.html" class="brand"><span class="dot"></span> WAVELENGTH</a>
+    <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
+  </div>
   <div class="links">
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
@@ -24,11 +27,11 @@
 
 <div class="doc" id="signed-out-notice" style="display:none;">
   <h1>Sign in to see your contacts</h1>
-  <p>Contacts and saved chat history are only available for registered accounts. <a href="login.html" style="color:var(--signal);">Sign in</a> or <a href="register.html" style="color:var(--signal);">create an account</a> — both are free.</p>
+  <p>Friends and saved chat history are only available for registered accounts. <a href="login.html" style="color:var(--signal);">Sign in</a> or <a href="register.html" style="color:var(--signal);">create an account</a> — both are free.</p>
 </div>
 
 <div class="doc" id="contacts-view">
-  <h1>Your contacts</h1>
+  <h1>Your friends</h1>
   <p class="updated" id="loading-note">Loading...</p>
 
   <div id="contacts-list"></div>
@@ -58,7 +61,7 @@
     document.getElementById('signed-out-notice').style.display = 'block';
     document.getElementById('contacts-view').style.display = 'none';
   } else {
-    loadContacts();
+    loadFriends();
     loadHistory();
   }
 
@@ -75,13 +78,13 @@
     return res.json();
   }
 
-  async function loadContacts(){
+  async function loadFriends(){
     const data = await authedFetch('/api/contacts');
     if(!data) return;
     const list = document.getElementById('contacts-list');
     document.getElementById('loading-note').style.display = 'none';
     if(!data.contacts || !data.contacts.length){
-      list.innerHTML = '<p style="color:var(--muted);">No contacts yet — add someone while chatting with them.</p>';
+      list.innerHTML = '<p style="color:var(--muted);">No friends yet — add someone while chatting with them.</p>';
       return;
     }
     list.innerHTML = '';
