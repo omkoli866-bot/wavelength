@@ -162,9 +162,8 @@
   // Set this to your live Render URL once deployed, e.g.
   // window.BACKEND_URL = "https://wavelength-backend.onrender.com";
   window.BACKEND_URL = "";
-  // Free API key from https://tenor.com/developer/dashboard (Google account,
-  // instant approval, generous free tier). Client-side keys are expected —
-  // Tenor's search API is designed to be called straight from the browser.
+  
+  // Giphy API Key
   window.GIPHY_KEY = "alCUd0QZuZMMBi49tgdmy8z05ADVSeea";
 </script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
@@ -657,34 +656,46 @@
     if(gifPanel.classList.contains('show')) searchGifs('trending');
   });
 
-  // ----- GIF picker (Tenor) -----
+  // ----- GIF picker (GIPHY API) -----
   const gifGrid = document.getElementById('gif-grid');
   const gifSearch = document.getElementById('gif-search');
   let gifSearchTimeout;
 
   async function searchGifs(query){
-    if(!window.TENOR_KEY || window.TENOR_KEY === 'YOUR_TENOR_API_KEY'){
-      gifGrid.innerHTML = '<div class="gif-empty">Add a free Tenor API key in chat.html to enable GIF search.</div>';
+    if(!window.GIPHY_KEY || window.GIPHY_KEY === 'YOUR_GIPHY_API_KEY'){
+      gifGrid.innerHTML = '<div class="gif-empty">Add a Giphy API key to enable GIF search.</div>';
       return;
     }
     gifGrid.innerHTML = '<div class="gif-empty">Loading...</div>';
-    const endpoint = query === 'trending'
-      ? `https://tenor.googleapis.com/v2/featured?key=${window.TENOR_KEY}&limit=18`
-      : `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(query)}&key=${window.TENOR_KEY}&limit=18`;
+    
+    const isTrending = !query || query === 'trending';
+    const endpoint = isTrending
+      ? `https://api.giphy.com/v1/gifs/trending?api_key=${window.GIPHY_KEY}&limit=18&rating=g`
+      : `https://api.giphy.com/v1/gifs/search?api_key=${window.GIPHY_KEY}&q=${encodeURIComponent(query)}&limit=18&rating=g`;
+
     try{
       const res = await fetch(endpoint);
       const data = await res.json();
       gifGrid.innerHTML = '';
-      (data.results || []).forEach(item=>{
-        const url = item.media_formats?.gif?.url || item.media_formats?.tinygif?.url;
-        if(!url) return;
+
+      if(!data.data || data.data.length === 0){
+        gifGrid.innerHTML = '<div class="gif-empty">No GIFs found.</div>';
+        return;
+      }
+
+      data.data.forEach(item=>{
+        const displayUrl = item.images?.fixed_height?.url || item.images?.original?.url;
+        const sendUrl = item.images?.original?.url || displayUrl;
+        if(!displayUrl) return;
+
         const img = document.createElement('img');
-        img.src = item.media_formats?.tinygif?.url || url;
+        img.src = displayUrl;
+        img.alt = item.title || 'GIF';
         img.loading = 'lazy';
         img.addEventListener('click', ()=>{
           const id = genId();
-          socket.emit('chat-message', { type: 'gif', url, id });
-          addMessage(url, 'me', 'gif', id);
+          socket.emit('chat-message', { type: 'gif', url: sendUrl, id });
+          addMessage(sendUrl, 'me', 'gif', id);
           gifPanel.classList.remove('show');
         });
         gifGrid.appendChild(img);
@@ -693,6 +704,7 @@
       gifGrid.innerHTML = '<div class="gif-empty">Couldn\'t load GIFs right now.</div>';
     }
   }
+
   gifSearch.addEventListener('input', ()=>{
     clearTimeout(gifSearchTimeout);
     gifSearchTimeout = setTimeout(()=>{
