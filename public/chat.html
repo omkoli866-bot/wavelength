@@ -60,27 +60,37 @@
     border-radius: 12px;
   }
 
-  /* WhatsApp-style bottom badge on message */
+  /* WhatsApp-style circular badge on message */
   .wa-reaction-badge {
     display: none;
     position: absolute;
     bottom: -10px;
     background: #1f2c34;
     border: 1px solid #111b21;
-    border-radius: 12px;
-    padding: 1px 6px;
-    font-size: 11px;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    font-size: 13px;
     color: #e9edef;
     align-items: center;
-    gap: 3px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
     cursor: pointer;
     z-index: 5;
+    line-height: 1;
+    box-sizing: border-box;
+  }
+  .wa-reaction-badge.multi {
+    border-radius: 12px;
+    width: auto;
+    padding: 0 6px;
+    gap: 2px;
   }
   .msg.me .wa-reaction-badge { right: 8px; }
   .msg.them .wa-reaction-badge { left: 8px; }
   .wa-reaction-badge.show { display: inline-flex; }
-  .wa-reaction-badge:hover { transform: scale(1.05); }
+  .wa-reaction-badge:hover { transform: scale(1.1); }
 
   /* WhatsApp-style Reaction Info Sheet */
   .reaction-modal-backdrop {
@@ -631,7 +641,7 @@
       });
       div.appendChild(bar);
 
-      // WhatsApp Reaction Badge attached to bottom of bubble
+      // WhatsApp Reaction Badge (circular for single emoji, pill for multiple)
       const badge = document.createElement('div');
       badge.className = 'wa-reaction-badge';
       badge.addEventListener('click', (e)=>{
@@ -640,13 +650,13 @@
       });
       div.appendChild(badge);
 
-      // --- Hold to Open Reaction Bar ---
+      // --- Hold / Long-press trigger ---
       let pressTimer;
       const startHold = () => {
         pressTimer = setTimeout(()=>{
           document.querySelectorAll('.reaction-bar.visible').forEach(b => b.classList.remove('visible'));
           bar.classList.add('visible');
-        }, 400); // 400ms hold
+        }, 400);
       };
       const cancelHold = () => clearTimeout(pressTimer);
 
@@ -678,14 +688,18 @@
     const emojis = Object.values(reactions).filter(Boolean);
 
     if(emojis.length === 0){
-      badge.classList.remove('show');
+      badge.classList.remove('show', 'multi');
       badge.innerHTML = '';
       return;
     }
 
-    // Display unique emoji icons + total count (like WhatsApp)
     const unique = [...new Set(emojis)];
-    badge.innerHTML = `${unique.join('')} <span style="font-weight:600;margin-left:2px;">${emojis.length > 1 ? emojis.length : ''}</span>`;
+    const isMulti = emojis.length > 1;
+
+    // Toggle multi class for pill vs circle
+    badge.classList.toggle('multi', isMulti);
+
+    badge.innerHTML = `${unique.join('')}${isMulti ? `<span style="font-weight:600;margin-left:2px;font-size:11px;">${emojis.length}</span>` : ''}`;
     badge.classList.add('show');
   }
 
