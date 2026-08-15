@@ -203,6 +203,15 @@
     <p class="sub">Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.</p>
 
     <div class="field">
+      <label>Chat type</label>
+      <div class="choice-row" id="mode-row">
+        <div class="choice active" data-m="text">💬 Text chat</div>
+        <div class="choice" data-m="video">📹 Video chat</div>
+      </div>
+      <p class="premium-hint" id="video-hint" style="display:none;">Video chat needs camera and mic access. You'll be asked to allow it once you start.</p>
+    </div>
+
+    <div class="field">
       <label>You are</label>
       <div class="choice-row" id="gender-row">
         <div class="choice" data-g="male">Male</div>
@@ -300,6 +309,18 @@
       </div>
     </div>
     <div class="shared-interests" id="shared-interests-row"></div>
+
+    <!-- Video call area — hidden entirely for text-mode chats. -->
+    <div class="video-call" id="video-call" style="display:none;">
+      <video id="remote-video" autoplay playsinline></video>
+      <video id="local-video" autoplay playsinline muted></video>
+      <div class="video-status" id="video-status">Connecting camera...</div>
+      <div class="video-controls">
+        <button class="icon-btn" id="toggle-mic-btn" title="Mute/unmute">🎤</button>
+        <button class="icon-btn" id="toggle-cam-btn" title="Camera on/off">📹</button>
+      </div>
+    </div>
+
     <div class="messages" id="messages"></div>
     <div class="typing-row" id="typing-row"></div>
 
@@ -403,10 +424,13 @@
   let myGender = null;
   let myPrefer = 'any';
   let myInterests = [];
+  let myMode = 'text';
 
   const genderRow = document.getElementById('gender-row');
   const preferRow = document.getElementById('prefer-row');
   const interestRow = document.getElementById('interest-row');
+  const modeRow = document.getElementById('mode-row');
+  const videoHint = document.getElementById('video-hint');
   const startBtn = document.getElementById('start-btn');
   const agreeBox = document.getElementById('agree');
   const premiumModal = document.getElementById('premium-modal');
@@ -417,11 +441,12 @@
       el.addEventListener('click', ()=>{
         row.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
         el.classList.add('active');
-        onPick(el.dataset.g);
+        onPick(el.dataset.g || el.dataset.m);
       });
     });
   }
   setupChoiceRow(genderRow, g => { myGender = g; validate(); });
+  setupChoiceRow(modeRow, m => { myMode = m; videoHint.style.display = m === 'video' ? 'block' : 'none'; });
 
   function getStoredPremium(){
     try {
@@ -604,7 +629,7 @@
   }
 
   startBtn.addEventListener('click', ()=>{
-    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, premiumToken: (getStoredPremium() || {}).token });
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, mode: myMode, premiumToken: (getStoredPremium() || {}).token });
     showScreen('waiting');
     waitingText.textContent = 'Tuning in to a stranger...';
   });
@@ -613,6 +638,8 @@
     socket.emit('leave');
     showScreen('setup');
   });
+
+  window.addEventListener('beforeunload', stopVideoCall);
 
   socket.on('waiting', ()=>{
     waitingText.textContent = 'No one nearby yet — still searching...';
@@ -838,7 +865,125 @@
   let currentPartnerUsername = null;
   let currentPartnerInterests = [];
 
-  socket.on('matched', ({ partnerGender, shared, partnerUsername, history })=>{
+  // ============================================================
+  // WebRTC video calling
+  // ============================================================
+  const videoCallEl = document.getElementById('video-call');
+  const remoteVideoEl = document.getElementById('remote-video');
+  const localVideoEl = document.getElementById('local-video');
+  const videoStatusEl = document.getElementById('video-status');
+  const toggleMicBtn = document.getElementById('toggle-mic-btn');
+  const toggleCamBtn = document.getElementById('toggle-cam-btn');
+
+  let peerConnection = null;
+  let localStream = null;
+  let currentMode = 'text';
+
+  // Google's public STUN server — enough to establish a call on most
+  // home/mobile networks. For more reliable connections behind strict
+  // corporate or carrier NATs, add a TURN server here too (e.g. a free
+  // tier from Twilio, Xirsys, or a self-hosted coturn instance):
+  // { urls: 'turn:your-turn-server', username: '...', credential: '...' }
+  const RTC_CONFIG = {
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  };
+
+  async function startVideoCall(isInitiator){
+    videoCallEl.style.display = 'block';
+    videoStatusEl.textContent = 'Connecting camera...';
+
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    } catch (err) {
+      videoStatusEl.textContent = "Couldn't access camera/mic — check your browser permissions.";
+      addMessage("Video call needs camera and mic access. You can still chat by text below.", 'sys');
+      return;
+    }
+    localVideoEl.srcObject = localStream;
+
+    peerConnection = new RTCPeerConnection(RTC_CONFIG);
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+    peerConnection.ontrack = (event) => {
+      remoteVideoEl.srcObject = event.streams[0];
+      videoStatusEl.textContent = '';
+    };
+
+    peerConnection.onicecandidate = (event) => {
+      if(event.candidate){
+        socket.emit('webrtc-signal', { type: 'ice-candidate', candidate: event.candidate });
+      }
+    };
+
+    peerConnection.onconnectionstatechange = () => {
+      if(peerConnection && (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed')){
+        videoStatusEl.textContent = 'Connection lost.';
+      }
+    };
+
+    if(isInitiator){
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      socket.emit('webrtc-signal', { type: 'offer', sdp: offer });
+    }
+  }
+
+  function stopVideoCall(){
+    if(localStream){
+      localStream.getTracks().forEach(t => t.stop());
+      localStream = null;
+    }
+    if(peerConnection){
+      peerConnection.close();
+      peerConnection = null;
+    }
+    remoteVideoEl.srcObject = null;
+    localVideoEl.srcObject = null;
+    videoCallEl.style.display = 'none';
+  }
+
+  socket.on('webrtc-signal', async (payload) => {
+    if(!peerConnection) return;
+    try {
+      if(payload.type === 'offer'){
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.emit('webrtc-signal', { type: 'answer', sdp: answer });
+      } else if(payload.type === 'answer'){
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+      } else if(payload.type === 'ice-candidate' && payload.candidate){
+        await peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate));
+      }
+    } catch (err) {
+      console.error('[webrtc] signaling error', err);
+    }
+  });
+
+  toggleMicBtn.addEventListener('click', ()=>{
+    if(!localStream) return;
+    const track = localStream.getAudioTracks()[0];
+    if(!track) return;
+    track.enabled = !track.enabled;
+    toggleMicBtn.classList.toggle('muted', !track.enabled);
+    toggleMicBtn.textContent = track.enabled ? '🎤' : '🔇';
+  });
+
+  toggleCamBtn.addEventListener('click', ()=>{
+    if(!localStream) return;
+    const track = localStream.getVideoTracks()[0];
+    if(!track) return;
+    track.enabled = !track.enabled;
+    toggleCamBtn.classList.toggle('muted', !track.enabled);
+  });
+
+  socket.on('matched', ({ partnerGender, shared, partnerUsername, history, mode, isInitiator })=>{
+    currentMode = mode || 'text';
+    if(currentMode === 'video'){
+      startVideoCall(!!isInitiator);
+    } else {
+      videoCallEl.style.display = 'none';
+    }
     messagesEl.innerHTML = '';
     const initial = partnerGender === 'female' ? 'F' : partnerGender === 'male' ? 'M' : '?';
     peerAvatar.textContent = initial;
@@ -1174,23 +1319,27 @@
   socket.on('partner-left', ()=>{
     peerState.textContent = 'disconnected';
     addMessage('Stranger has left the chat.', 'sys');
+    stopVideoCall();
   });
 
   document.getElementById('skip-btn').addEventListener('click', ()=>{
+    stopVideoCall();
     socket.emit('skip');
   });
   socket.on('ready-to-requeue', ()=>{
-    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, premiumToken: (getStoredPremium() || {}).token });
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, mode: myMode, premiumToken: (getStoredPremium() || {}).token });
     showScreen('waiting');
     waitingText.textContent = 'Finding a new stranger...';
   });
 
   document.getElementById('leave-btn').addEventListener('click', ()=>{
+    stopVideoCall();
     socket.emit('leave');
     showScreen('setup');
   });
 
   document.getElementById('report-btn').addEventListener('click', ()=>{
+    stopVideoCall();
     socket.emit('report');
     addMessage('You reported this stranger and left the chat.', 'sys');
     setTimeout(()=> showScreen('setup'), 900);
