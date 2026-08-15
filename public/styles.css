@@ -357,22 +357,55 @@ a{color:inherit;}
 .signal-strip{
   max-width:640px;
   margin:44px auto 0;
+  position:relative;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
 }
-.signal-strip span{
-  width:5px;
-  border-radius:3px;
-  background:var(--signal);
-  opacity:0.7;
-  animation:strip-bounce 1.6s ease-in-out infinite;
+.signal-glow{
+  position:absolute;
+  inset:-30px -20px;
+  background:radial-gradient(ellipse at center, rgba(47,107,255,0.18), rgba(255,59,78,0.10) 55%, transparent 75%);
+  filter:blur(18px);
+  pointer-events:none;
+  z-index:0;
 }
-.signal-strip span:nth-child(odd){background:var(--rose); opacity:0.55;}
-@keyframes strip-bounce{
-  0%,100%{height:10px;}
-  50%{height:38px;}
+.signal-bars{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+}
+.signal-bars span{
+  width:4px;
+  border-radius:999px;
+  background:linear-gradient(180deg, var(--signal), var(--rose));
+  opacity:0.85;
+  animation:wave-flow 1.8s cubic-bezier(.45,0,.55,1) infinite;
+  box-shadow:0 0 6px rgba(47,107,255,0.35);
+}
+/* Symmetric amplitude curve — tallest bars sit in the middle third rather
+   than trailing off to one side, reading as a real waveform, not a fading
+   dash trail. */
+.signal-bars span:nth-child(1),  .signal-bars span:nth-child(21){ --amp:8px; }
+.signal-bars span:nth-child(2),  .signal-bars span:nth-child(20){ --amp:12px; }
+.signal-bars span:nth-child(3),  .signal-bars span:nth-child(19){ --amp:17px; }
+.signal-bars span:nth-child(4),  .signal-bars span:nth-child(18){ --amp:14px; }
+.signal-bars span:nth-child(5),  .signal-bars span:nth-child(17){ --amp:22px; }
+.signal-bars span:nth-child(6),  .signal-bars span:nth-child(16){ --amp:19px; }
+.signal-bars span:nth-child(7),  .signal-bars span:nth-child(15){ --amp:28px; }
+.signal-bars span:nth-child(8),  .signal-bars span:nth-child(14){ --amp:24px; }
+.signal-bars span:nth-child(9),  .signal-bars span:nth-child(13){ --amp:34px; }
+.signal-bars span:nth-child(10), .signal-bars span:nth-child(12){ --amp:30px; }
+.signal-bars span:nth-child(11){ --amp:40px; }
+@keyframes wave-flow{
+  0%, 100%{ height:8px; opacity:0.55; }
+  50%{ height:var(--amp); opacity:1; }
+}
+@media (prefers-reduced-motion: reduce){
+  .signal-bars span{ animation:none; height:var(--amp); opacity:0.8; }
 }
 
 /* How it works */
