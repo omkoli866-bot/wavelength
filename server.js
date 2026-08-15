@@ -321,7 +321,10 @@ function compatible(a, b) {
   const genderOk =
     (a.prefer === 'any' || a.prefer === b.gender) &&
     (b.prefer === 'any' || b.prefer === a.gender);
-  return genderOk;
+  // Text-seekers only match other text-seekers, video only video — you
+  // can't WebRTC-signal with someone who never opened a camera connection.
+  const modeOk = a.mode === b.mode;
+  return genderOk && modeOk;
 }
 
 function sharedInterests(a, b) {
@@ -407,15 +410,21 @@ io.on('connection', (socket) => {
   }
 
   // Loads shared history (if any) and emits 'matched' to both sides —
-  // shared by both random matching and direct-connect-to-contact.
+  // shared by both random matching and direct-connect-to-contact. Whoever
+  // is passed as "a" becomes the WebRTC offer initiator for video calls;
+  // for text mode this flag is simply ignored.
   async function connectPair(aSocketId, aInfo, bSocketId, bInfo) {
     partners.set(aSocketId, bSocketId);
     partners.set(bSocketId, aSocketId);
     const shared = sharedInterests(aInfo, bInfo);
     const bothLoggedIn = aInfo.userId && bInfo.userId && dbReady();
+    const mode = aInfo.mode === 'video' && bInfo.mode === 'video' ? 'video' : 'text';
 
-    const emitMatch = async (targetSocketId, partnerGender, partnerUsername, myId, otherId) => {
-      const payload = { partnerGender, shared, partnerUsername: partnerUsername || null, history: [] };
+    const emitMatch = async (targetSocketId, partnerGender, partnerUsername, myId, otherId, isInitiator) => {
+      const payload = {
+        partnerGender, shared, mode, isInitiator,
+        partnerUsername: partnerUsername || null, history: [],
+      };
       if (bothLoggedIn) {
         try {
           const key = pairKeyFor(myId, otherId);
@@ -435,15 +444,17 @@ io.on('connection', (socket) => {
       io.to(targetSocketId).emit('matched', payload);
     };
 
-    emitMatch(aSocketId, bInfo.gender, bInfo.username, aInfo.userId, bInfo.userId);
-    emitMatch(bSocketId, aInfo.gender, aInfo.username, bInfo.userId, aInfo.userId);
+    emitMatch(aSocketId, bInfo.gender, bInfo.username, aInfo.userId, bInfo.userId, true);
+    emitMatch(bSocketId, aInfo.gender, aInfo.username, bInfo.userId, aInfo.userId, false);
   }
 
-  socket.on('find-partner', ({ gender, prefer, interests, premiumToken }) => {
+  socket.on('find-partner', ({ gender, prefer, interests, premiumToken, mode }) => {
     // basic validation
     const validGenders = ['male', 'female', 'other'];
     const validPrefers = ['male', 'female', 'any'];
+    const validModes = ['text', 'video'];
     if (!validGenders.includes(gender) || !validPrefers.includes(prefer)) return;
+    const cleanMode = validModes.includes(mode) ? mode : 'text';
     const cleanInterests = Array.isArray(interests)
       ? interests.filter((i) => typeof i === 'string').slice(0, 10)
       : [];
@@ -462,6 +473,7 @@ io.on('connection', (socket) => {
       gender,
       prefer: effectivePrefer,
       interests: cleanInterests,
+      mode: cleanMode,
       userId: socket.data.user ? socket.data.user.sub : null,
       username: socket.data.user ? socket.data.user.username : null,
     };
@@ -472,6 +484,14 @@ io.on('connection', (socket) => {
     } else {
       io.to(socket.id).emit('waiting');
     }
+  });
+
+  // Relay WebRTC signaling blind — the server never inspects SDP/ICE
+  // contents, it just forwards between the two currently-paired sockets.
+  socket.on('webrtc-signal', (payload) => {
+    const partnerId = partners.get(socket.id);
+    if (!partnerId) return;
+    io.to(partnerId).emit('webrtc-signal', payload);
   });
 
   // Reconnect directly with someone already in your contacts, bypassing
