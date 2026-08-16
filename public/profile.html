@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>My Profile — Wavelength</title>
+<title>Friends — Wavelength</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,42 +34,26 @@
     <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
   </div>
   <div class="links">
-    <a href="friends.html">Friends</a>
     <a href="guidelines.html">Guidelines</a>
+    <a href="privacy.html">Privacy</a>
     <a href="#" id="nav-logout">Log out</a>
     <a href="chat.html" class="cta">Start chatting</a>
   </div>
 </nav>
 
 <div class="doc" id="signed-out-notice" style="display:none;">
-  <h1>Sign in to see your profile</h1>
-  <p>Profiles are only available for registered accounts. <a href="login.html" style="color:var(--signal);">Sign in</a> or <a href="register.html" style="color:var(--signal);">create an account</a> — both are free.</p>
+  <h1>Sign in to see your contacts</h1>
+  <p>Friends and saved chat history are only available for registered accounts. <a href="login.html" style="color:var(--signal);">Sign in</a> or <a href="register.html" style="color:var(--signal);">create an account</a> — both are free.</p>
 </div>
 
-<div class="app-wrap" id="profile-view" style="display:none;">
-<div class="app">
-  <div class="card" style="text-align:center;">
-    <div class="avatar" id="profile-avatar" style="margin:0 auto 16px; font-size:32px; width:76px; height:76px; line-height:76px;">?</div>
-    <h1 id="profile-username" style="margin-bottom:4px;">Username</h1>
-    <p class="sub" style="margin-bottom:0;">Registered member</p>
-    <p class="updated" id="profile-since" style="margin:6px 0 26px;"></p>
+<div class="doc" id="contacts-view">
+  <h1>Your friends</h1>
+  <p class="updated" id="loading-note">Loading...</p>
 
-    <div class="profile-stats">
-      <div class="profile-stat">
-        <span class="profile-stat-num" id="stat-friends">0</span>
-        <span class="profile-stat-label">Friends</span>
-      </div>
-      <div class="profile-stat">
-        <span class="profile-stat-num" id="stat-chats">0</span>
-        <span class="profile-stat-label">Conversations</span>
-      </div>
-    </div>
+  <div id="contacts-list"></div>
 
-    <a href="friends.html" class="btn secondary" style="display:block; text-decoration:none; margin-bottom:10px;">View friends</a>
-    <button class="btn" id="logout-btn">Log out</button>
-    <p class="footnote">Signed in as this account on this device.</p>
-  </div>
-</div>
+  <h2 style="margin-top:44px;">Past conversations</h2>
+  <div id="history-list"></div>
 </div>
 
 <script>
@@ -82,51 +66,83 @@
   }
 
   const auth = getAuth();
-
-  function doLogout(){
+  document.getElementById('nav-logout').addEventListener('click', (e)=>{
+    e.preventDefault();
     localStorage.removeItem('wl_auth_token');
     localStorage.removeItem('wl_username');
     window.location.href = 'index.html';
-  }
-  document.getElementById('nav-logout').addEventListener('click', (e)=>{ e.preventDefault(); doLogout(); });
-  document.getElementById('logout-btn').addEventListener('click', doLogout);
+  });
 
   if(!auth){
     document.getElementById('signed-out-notice').style.display = 'block';
+    document.getElementById('contacts-view').style.display = 'none';
   } else {
-    loadProfile();
+    loadFriends();
+    loadHistory();
   }
 
-  async function loadProfile(){
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/me`, {
-        headers: { Authorization: `Bearer ${auth.token}` },
-      });
-      const data = await res.json();
-      if(!data.loggedIn){
-        doLogout();
-        return;
-      }
-      document.getElementById('profile-view').style.display = 'flex';
-      document.getElementById('profile-username').textContent = data.username;
-      document.getElementById('profile-avatar').textContent = data.username.charAt(0).toUpperCase();
-      if(data.memberSince){
-        const d = new Date(data.memberSince);
-        document.getElementById('profile-since').textContent =
-          'Member since ' + d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
-      }
-      document.getElementById('stat-friends').textContent = data.friendCount ?? 0;
-
-      // Conversation count reuses the same history endpoint the Friends
-      // page uses, just to get a count — no need for a separate API.
-      const histRes = await fetch(`${API_BASE}/api/history`, {
-        headers: { Authorization: `Bearer ${auth.token}` },
-      });
-      const hist = await histRes.json();
-      document.getElementById('stat-chats').textContent = (hist.conversations || []).length;
-    } catch (err) {
-      console.error('[profile] failed to load', err);
+  async function authedFetch(path){
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: { Authorization: `Bearer ${auth.token}` },
+    });
+    if(res.status === 401){
+      localStorage.removeItem('wl_auth_token');
+      localStorage.removeItem('wl_username');
+      window.location.href = 'login.html';
+      return null;
     }
+    return res.json();
+  }
+
+  async function loadFriends(){
+    const data = await authedFetch('/api/contacts');
+    if(!data) return;
+    const list = document.getElementById('contacts-list');
+    document.getElementById('loading-note').style.display = 'none';
+    if(!data.contacts || !data.contacts.length){
+      list.innerHTML = '<p style="color:var(--muted);">No friends yet — add someone while chatting with them.</p>';
+      return;
+    }
+    list.innerHTML = '';
+    data.contacts.forEach(c=>{
+      const row = document.createElement('a');
+      row.className = 'contact-row';
+      row.href = `chat.html?with=${encodeURIComponent(c.username)}`;
+      row.innerHTML = `
+        <span class="contact-dot ${c.online ? 'online' : ''}"></span>
+        <span class="contact-name">${escapeHtml(c.username)}</span>
+        <span class="contact-status">${c.online ? 'Online — chat now' : 'Offline'}</span>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  async function loadHistory(){
+    const data = await authedFetch('/api/history');
+    if(!data) return;
+    const list = document.getElementById('history-list');
+    if(!data.conversations || !data.conversations.length){
+      list.innerHTML = '<p style="color:var(--muted);">No past conversations yet.</p>';
+      return;
+    }
+    list.innerHTML = '';
+    data.conversations.forEach(c=>{
+      const row = document.createElement('a');
+      row.className = 'contact-row';
+      row.href = `chat.html?with=${encodeURIComponent(c.otherUsername)}`;
+      const preview = c.lastMessageWasMine ? `You: ${c.lastMessagePreview}` : c.lastMessagePreview;
+      row.innerHTML = `
+        <span class="contact-name">${escapeHtml(c.otherUsername)}</span>
+        <span class="contact-status">${escapeHtml(preview || '')}</span>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 </script>
 </body>
