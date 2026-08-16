@@ -29,6 +29,12 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true, trim: true, minlength: 3, maxlength: 24 },
   passwordHash: { type: String, required: true },
   contacts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  bio: { type: String, default: '', maxlength: 160, trim: true },
+  age: { type: Number, min: 18, max: 99 },
+  // Stored as a small base64 data URL — kept intentionally tiny (see the
+  // client-side resize before upload) so it fits comfortably in a normal
+  // MongoDB document without needing separate file/object storage.
+  avatarData: { type: String, default: '', maxlength: 60000 },
   createdAt: { type: Date, default: Date.now },
 });
 
