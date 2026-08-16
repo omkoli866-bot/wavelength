@@ -215,8 +215,21 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.get('/api/auth/me', optionalAuth, (req, res) => {
-  res.json({ loggedIn: !!req.user, username: req.user ? req.user.username : null });
+app.get('/api/auth/me', optionalAuth, async (req, res) => {
+  if (!req.user) return res.json({ loggedIn: false, username: null });
+  try {
+    const me = await User.findById(req.user.sub);
+    if (!me) return res.json({ loggedIn: false, username: null });
+    res.json({
+      loggedIn: true,
+      username: me.username,
+      memberSince: me.createdAt,
+      friendCount: me.contacts.length,
+    });
+  } catch (err) {
+    console.error('[auth/me] failed', err);
+    res.json({ loggedIn: true, username: req.user.username });
+  }
 });
 
 // List everyone the current user has an existing conversation with,
