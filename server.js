@@ -10,7 +10,7 @@ const { connectDB, dbReady, User, Message, pairKeyFor, addMutualContact } = requ
 
 const app = express();
 const server = http.createServer(app);
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 // Set JWT_SECRET as an env var on Render — any long random string. Used to
 // sign login sessions. If unset, a random one is generated at boot, which
@@ -225,10 +225,91 @@ app.get('/api/auth/me', optionalAuth, async (req, res) => {
       username: me.username,
       memberSince: me.createdAt,
       friendCount: me.contacts.length,
+      bio: me.bio || '',
+      age: me.age || null,
+      avatarData: me.avatarData || '',
     });
   } catch (err) {
     console.error('[auth/me] failed', err);
     res.json({ loggedIn: true, username: req.user.username });
+  }
+});
+
+// Update your own profile. Only touches fields that were actually sent —
+// omit a field entirely to leave it unchanged. Username changes are
+// re-validated for uniqueness server-side, and issue a fresh token since
+// the old one still has the previous username baked into it.
+app.put('/api/profile', requireAuth, async (req, res) => {
+  const { username, bio, age, avatarData, removeAvatar } = req.body || {};
+  try {
+    const me = await User.findById(req.user.sub);
+    if (!me) return res.status(404).json({ error: 'Account not found.' });
+
+    let usernameChanged = false;
+
+    if (typeof username === 'string' && username.trim() && username.trim() !== me.username) {
+      const clean = username.trim();
+      if (clean.length < 3 || clean.length > 24) {
+        return res.status(400).json({ error: 'Username must be 3-24 characters.' });
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+        return res.status(400).json({ error: 'Username can only contain letters, numbers, and underscores.' });
+      }
+      const taken = await User.findOne({ username: clean, _id: { $ne: me._id } });
+      if (taken) return res.status(409).json({ error: 'That username is already taken.' });
+      me.username = clean;
+      usernameChanged = true;
+    }
+
+    if (typeof bio === 'string') {
+      me.bio = bio.slice(0, 160);
+    }
+
+    if (age !== undefined) {
+      if (age === null || age === '') {
+        me.age = undefined;
+      } else {
+        const n = parseInt(age, 10);
+        if (!Number.isFinite(n) || n < 18 || n > 99) {
+          return res.status(400).json({ error: 'Age must be between 18 and 99.' });
+        }
+        me.age = n;
+      }
+    }
+
+    if (removeAvatar) {
+      me.avatarData = '';
+    } else if (typeof avatarData === 'string' && avatarData) {
+      if (!avatarData.startsWith('data:image/')) {
+        return res.status(400).json({ error: 'Invalid image data.' });
+      }
+      if (avatarData.length > 60000) {
+        return res.status(400).json({ error: 'Image is too large — please use a smaller photo.' });
+      }
+      me.avatarData = avatarData;
+    }
+
+    await me.save();
+
+    const response = {
+      success: true,
+      username: me.username,
+      bio: me.bio,
+      age: me.age || null,
+      avatarData: me.avatarData || '',
+    };
+    // A changed username invalidates the claims in any existing token, so
+    // hand back a freshly signed one the client should swap in immediately.
+    if (usernameChanged) {
+      response.token = signAuthToken(me);
+    }
+    res.json(response);
+  } catch (err) {
+    if (err.code === 11000) {
+      return res.status(409).json({ error: 'That username is already taken.' });
+    }
+    console.error('[profile] update failed', err);
+    res.status(500).json({ error: 'Could not update profile.' });
   }
 });
 
