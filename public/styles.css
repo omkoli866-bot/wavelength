@@ -994,15 +994,23 @@ h1{
   margin-bottom:14px;
 }
 .peer{display:flex; align-items:center; gap:10px;}
-.peer .avatar{
+.avatar{
   width:34px;height:34px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
   font-size:14px;font-weight:600;
   background:var(--signal-dim);
   color:var(--signal);
   border:1px solid var(--line);
+  overflow:hidden;
+  flex:none;
 }
-.peer .avatar.female{background:rgba(255,122,156,0.14); color:var(--rose);}
+.avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:50%;
+}
+.avatar.female{background:rgba(255,122,156,0.14); color:var(--rose);}
 .peer .meta .name{font-size:14px; font-weight:600;}
 .peer .meta .state{font-size:12px; color:var(--muted);}
 .header-actions{display:flex; gap:8px;}
@@ -1130,6 +1138,37 @@ h1{
   margin-top:2px;
 }
 
+.optional{
+  font-weight:400;
+  text-transform:none;
+  letter-spacing:0;
+  font-size:11px;
+  color:var(--muted);
+}
+
+.avatar-edit-wrap{
+  position:relative;
+  width:88px;
+  margin:0 auto;
+}
+.avatar-edit-btn{
+  position:absolute;
+  bottom:-2px;
+  right:-2px;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:var(--signal);
+  border:2px solid var(--panel);
+  color:#fff;
+  font-size:13px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.avatar-edit-btn:hover{ filter:brightness(1.1); }
+
 /* ===== Auth forms (register/login) ===== */
 .text-input{
   width:100%;
@@ -1146,6 +1185,12 @@ h1{
 .text-input:focus{border-color:var(--signal); box-shadow:0 0 0 3px var(--signal-dim);}
 .form-error{
   color:var(--danger);
+  font-size:13px;
+  margin:-6px 0 14px;
+  min-height:16px;
+}
+.form-success{
+  color:var(--signal);
   font-size:13px;
   margin:-6px 0 14px;
   min-height:16px;
