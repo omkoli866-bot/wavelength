@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="70%">
+      <stop offset="0%" stop-color="#151a3a"/>
+      <stop offset="100%" stop-color="#0F1117"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+
+  <!-- Flowing wave, drawn via a looping dash animation so it reads as a
+       continuous traveling signal rather than a static squiggle. -->
+  <path d="M10 38 Q17 20 24 38 T38 38 Q45 20 52 38"
+        fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round"
+        stroke-dasharray="6 5">
+    <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="1.1s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Soft glow trace of the same wave, breathing behind the main line. -->
+  <path d="M10 38 Q17 20 24 38 T38 38 Q45 20 52 38"
+        fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18">
+    <animate attributeName="opacity" values="0.10;0.28;0.10" dur="2.4s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- Endpoint dots, pulsing out of phase with each other like two
+       separate signals meeting in the middle. -->
+  <circle cx="10" cy="38" r="3" fill="#FF7A9C">
+    <animate attributeName="r" values="2.4;3.6;2.4" dur="1.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="10" cy="38" r="3" fill="none" stroke="#FF7A9C" stroke-width="1">
+    <animate attributeName="r" values="3;9" dur="1.6s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0" dur="1.6s" repeatCount="indefinite"/>
+  </circle>
+
+  <circle cx="52" cy="38" r="3" fill="#FF7A9C">
+    <animate attributeName="r" values="3.6;2.4;3.6" dur="1.6s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="52" cy="38" r="3" fill="none" stroke="#FF7A9C" stroke-width="1">
+    <animate attributeName="r" values="3;9" dur="1.6s" begin="0.8s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.6;0" dur="1.6s" begin="0.8s" repeatCount="indefinite"/>
+  </circle>
+</svg>

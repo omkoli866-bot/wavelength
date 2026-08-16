@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chat — Wavelength</title>
+<meta name="description" content="Talk anonymously with a random stranger. No account, no history." />
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* WhatsApp-style Reaction System */
+  .msg {
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: pointer;
+  }
+  
+  /* Floating emoji bar on hold */
+  .reaction-bar {
+    display: none;
+    position: absolute;
+    top: -46px;
+    background: #232d36;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 4px 8px;
+    gap: 8px;
+    z-index: 50;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    animation: popUp 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .msg.me .reaction-bar { right: 0; }
+  .msg.them .reaction-bar { left: 0; }
+  .reaction-bar.visible { display: flex; align-items: center; }
+
+  @keyframes popUp {
+    from { transform: scale(0.6); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .reaction-bar button {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 50%;
+    transition: transform 0.12s ease;
+    line-height: 1;
+  }
+  .reaction-bar button:hover {
+    transform: scale(1.35);
+  }
+  .reaction-bar button.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+  }
+
+  /* WhatsApp-style circular badge on message */
+  .wa-reaction-badge {
+    display: none;
+    position: absolute;
+    bottom: -10px;
+    background: #1f2c34;
+    border: 1px solid #111b21;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    font-size: 13px;
+    color: #e9edef;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    cursor: pointer;
+    z-index: 5;
+    line-height: 1;
+    box-sizing: border-box;
+  }
+  .wa-reaction-badge.multi {
+    border-radius: 12px;
+    width: auto;
+    padding: 0 6px;
+    gap: 2px;
+  }
+  .msg.me .wa-reaction-badge { right: 8px; }
+  .msg.them .wa-reaction-badge { left: 8px; }
+  .wa-reaction-badge.show { display: inline-flex; }
+  .wa-reaction-badge:hover { transform: scale(1.1); }
+
+  /* WhatsApp-style Reaction Info Sheet */
+  .reaction-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .reaction-modal-backdrop.show { display: flex; }
+  .reaction-sheet {
+    background: #111b21;
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    max-width: 420px;
+    padding: 16px 20px 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.6);
+  }
+  .reaction-sheet-header {
+    font-weight: 600;
+    font-size: 15px;
+    color: #e9edef;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .reaction-sheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .reaction-sheet-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+  }
+  .reaction-sheet-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #e9edef;
+    font-size: 14px;
+  }
+  .reaction-sheet-remove {
+    background: transparent;
+    border: none;
+    color: #f15c6d;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+
+  /* Peer Name Interactive Styling */
+  .peer .name.registered-user {
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+  }
+  .peer .name.registered-user:hover {
+    color: var(--signal, #2F6BFF);
+  }
+</style>
+</head>
+<body>
+<div class="stars-layer stars-small" aria-hidden="true"></div>
+<div class="stars-layer stars-medium" aria-hidden="true"></div>
+<div class="stars-layer stars-large" aria-hidden="true"></div>
+
+<nav class="site-nav">
+  <div class="nav-left">
+    <a href="index.html" class="brand"><svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
+      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18">
+        <animate attributeName="opacity" values="0.10;0.28;0.10" dur="2.4s" repeatCount="indefinite"/>
+      </path>
+      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="6 5">
+        <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="1.1s" repeatCount="indefinite"/>
+      </path>
+      <circle cx="10" cy="30" r="3" fill="#FF7A9C">
+        <animate attributeName="r" values="2.4;3.6;2.4" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="52" cy="30" r="3" fill="#FF7A9C">
+        <animate attributeName="r" values="3.6;2.4;3.6" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+    </svg> Wavelength</a>
+    <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
+  </div>
+  <div class="links">
+    <a href="guidelines.html">Guidelines</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="#" id="nav-recent-chats">Recent Chats</a>
+    <a href="friends.html" id="nav-friends" style="display:none;">Friends</a>
+    <a href="login.html" id="nav-login">Sign in</a>
+    <a href="#" id="nav-logout" style="display:none;">Log out</a>
+  </div>
+</nav>
+
+<div class="app-wrap">
+<div class="app" id="app">
+
+  <!-- Screen 1: Setup -->
+  <div class="card" id="screen-setup">
+    <h1>Find a signal.</h1>
+    <p class="sub">Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.</p>
+
+    <div class="field">
+      <label>Chat type</label>
+      <div class="choice-row" id="mode-row">
+        <div class="choice active" data-m="text">💬 Text chat</div>
+        <div class="choice" data-m="video">📹 Video chat</div>
+      </div>
+      <p class="premium-hint" id="video-hint" style="display:none;">Video chat needs camera and mic access. You'll be asked to allow it once you start.</p>
+    </div>
+
+    <div class="field">
+      <label>You are</label>
+      <div class="choice-row" id="gender-row">
+        <div class="choice" data-g="male">Male</div>
+        <div class="choice" data-g="female">Female</div>
+        <div class="choice" data-g="other">Other</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Talk to <span class="premium-badge">Premium</span></label>
+      <div class="choice-row locked" id="prefer-row">
+        <div class="choice locked-choice active" data-g="any">Anyone</div>
+        <div class="choice locked-choice" data-g="male">Male <span class="lock-ico">🔒</span></div>
+        <div class="choice locked-choice" data-g="female">Female <span class="lock-ico">🔒</span></div>
+      </div>
+      <p class="premium-hint">Free users are matched with anyone. Upgrade to pick who you talk to.</p>
+    </div>
+
+    <div class="field">
+      <label>Your interests <span class="optional">(optional — we'll try to match you with someone who shares them)</span></label>
+      <div class="interest-row" id="interest-row">
+        <div class="interest-tag" data-i="music">🎧 Music</div>
+        <div class="interest-tag" data-i="gaming">🎮 Gaming</div>
+        <div class="interest-tag" data-i="movies">🎬 Movies</div>
+        <div class="interest-tag" data-i="sports">⚽ Sports</div>
+        <div class="interest-tag" data-i="art">🎨 Art</div>
+        <div class="interest-tag" data-i="books">📚 Books</div>
+        <div class="interest-tag" data-i="anime">🌀 Anime</div>
+        <div class="interest-tag" data-i="tech">💻 Tech</div>
+        <div class="interest-tag" data-i="travel">✈️ Travel</div>
+        <div class="interest-tag" data-i="food">🍜 Food</div>
+      </div>
+    </div>
+
+    <div class="guidelines-box">
+      <input type="checkbox" id="agree" />
+      <p>I'm 18 or older. I won't share personal info, harass anyone, or post illegal content. I understand chats aren't actively moderated in real time and I can report or leave at any point. Read the <a href="guidelines.html" style="color:var(--signal);">full guidelines</a>.</p>
+    </div>
+
+    <button class="btn" id="start-btn" disabled>Start chatting</button>
+    <p class="footnote">Be someone worth talking to.</p>
+  </div>
+
+  <!-- Premium upsell modal -->
+  <div class="modal-backdrop" id="premium-modal">
+    <div class="modal-card">
+      <div class="modal-icon">🔒</div>
+      <h2>Choose who you talk to</h2>
+      <p>Upgrade to Premium to match only with the gender you pick, skip more often, and get priority matching.</p>
+      <button class="btn" id="modal-upgrade-btn">Upgrade to Premium</button>
+      <button class="btn secondary" id="modal-close-btn">Maybe later</button>
+    </div>
+  </div>
+
+  <!-- Screen 2: Waiting -->
+  <div class="card" id="screen-waiting" style="display:none;">
+    <div class="tuner">
+      <div class="scanner">
+        <div class="scanner-rings">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="scanner-sweep"></div>
+        <div class="scanner-blips" id="scanner-blips"></div>
+        <div class="scanner-core">
+          <span class="freq-readout mono" id="freq-readout">88.0</span>
+          <span class="freq-unit mono">MHz</span>
+        </div>
+      </div>
+      <div class="status-text" id="waiting-text">Tuning in to a stranger...</div>
+      <div class="scan-phrase mono" id="scan-phrase">scanning nearby frequencies</div>
+    </div>
+    <button class="btn secondary" id="cancel-btn">Cancel</button>
+  </div>
+
+  <!-- Match flash overlay -->
+  <div class="match-flash" id="match-flash">
+    <div class="flash-burst">SIGNAL LOCKED</div>
+    <div class="flash-shared" id="flash-shared"></div>
+  </div>
+
+  <!-- Screen 3: Chat -->
+  <div class="chat-shell" id="screen-chat">
+    <div class="chat-header">
+      <div class="peer">
+        <div class="avatar" id="peer-avatar">?</div>
+        <div class="meta">
+          <div class="name" id="peer-name">Stranger</div>
+          <div class="state" id="peer-state">connected</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="add-contact-btn" style="display:none;">+ Friend</button>
+        <button class="icon-btn" id="topic-btn">💡 Topic</button>
+        <button class="icon-btn" id="report-btn">Report</button>
+      </div>
+    </div>
+    <div class="shared-interests" id="shared-interests-row"></div>
+
+    <!-- Video call area — hidden entirely for text-mode chats. -->
+    <div class="video-call" id="video-call" style="display:none;">
+      <video id="remote-video" autoplay playsinline></video>
+      <video id="local-video" autoplay playsinline muted></video>
+      <div class="video-status" id="video-status">Connecting camera...</div>
+      <div class="video-controls">
+        <button class="icon-btn" id="toggle-mic-btn" title="Mute/unmute">🎤</button>
+        <button class="icon-btn" id="toggle-cam-btn" title="Camera on/off">📹</button>
+      </div>
+    </div>
+
+    <div class="messages" id="messages"></div>
+    <div class="typing-row" id="typing-row"></div>
+
+    <div class="picker-panel" id="sticker-panel"></div>
+    <div class="picker-panel" id="gif-panel">
+      <input type="text" id="gif-search" class="mono" placeholder="Search GIFs..." />
+      <div class="gif-grid" id="gif-grid"></div>
+    </div>
+
+    <div class="bottom-actions">
+      <button class="icon-btn" id="skip-btn">⏭ Skip</button>
+      <button class="icon-btn danger-btn" id="leave-btn">✕ Leave</button>
+    </div>
+
+    <div class="composer">
+      <button class="icon-btn picker-toggle" id="sticker-toggle-btn" title="Stickers">😊</button>
+      <button class="icon-btn picker-toggle" id="gif-toggle-btn" title="GIFs">GIF</button>
+      <input type="text" id="msg-input" placeholder="Say something..." maxlength="1000" />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- WhatsApp Reaction Details Sheet -->
+<div class="reaction-modal-backdrop" id="reaction-modal">
+  <div class="reaction-sheet">
+    <div class="reaction-sheet-header">
+      <span>Reactions</span>
+      <button style="background:none;border:none;color:#aaa;font-size:16px;cursor:pointer;" id="close-reaction-modal">✕</button>
+    </div>
+    <div class="reaction-sheet-list" id="reaction-sheet-list"></div>
+  </div>
+</div>
+
+<!-- Profile Modal (Registered Users Only) -->
+<div class="modal-backdrop" id="profile-modal">
+  <div class="modal-card">
+    <div class="avatar" id="profile-modal-avatar" style="margin: 0 auto 12px; font-size: 28px; width: 64px; height: 64px; line-height: 64px;">?</div>
+    <h2 id="profile-modal-username">Username</h2>
+    <p class="sub" id="profile-modal-badge">Registered Member</p>
+    <div id="profile-modal-interests" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin: 15px 0;"></div>
+    <button class="btn secondary" id="profile-modal-close">Close</button>
+  </div>
+</div>
+
+<!-- Recent Chats Modal (For Everyone) -->
+<div class="modal-backdrop" id="recent-chats-modal">
+  <div class="modal-card" style="max-height: 80vh; display: flex; flex-direction: column; text-align: left;">
+    <h2>Recent Chats</h2>
+    <p class="sub" style="margin-bottom: 12px;">Your recent conversation sessions stored on this device.</p>
+    <div id="recent-chats-list" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;"></div>
+    <button class="btn secondary" id="recent-modal-close">Close</button>
+  </div>
+</div>
+
+<script>
+  window.BACKEND_URL = "";
+  window.GIPHY_KEY = "alCUd0QZuZMMBi49tgdmy8z05ADVSeea";
+</script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  const API_BASE = window.BACKEND_URL || '';
+
+  // ---- Auth ----
+  function getAuth(){
+    const token = localStorage.getItem('wl_auth_token');
+    const username = localStorage.getItem('wl_username');
+    return token && username ? { token, username } : null;
+  }
+  function clearAuth(){
+    localStorage.removeItem('wl_auth_token');
+    localStorage.removeItem('wl_username');
+  }
+
+  const socket = io(window.BACKEND_URL || undefined, {
+    auth: (cb) => cb({ token: (getAuth() || {}).token }),
+  });
+
+  (function renderNavAuth(){
+    const auth = getAuth();
+    const navLogin = document.getElementById('nav-login');
+    const navLogout = document.getElementById('nav-logout');
+    const navContacts = document.getElementById('nav-friends');
+    if(auth){
+      if(navLogin){ navLogin.textContent = auth.username; navLogin.href = 'profile.html'; }
+      if(navLogout) navLogout.style.display = '';
+      if(navContacts) navContacts.style.display = '';
+    }
+    if(navLogout){
+      navLogout.addEventListener('click', (e)=>{
+        e.preventDefault();
+        clearAuth();
+        window.location.reload();
+      });
+    }
+  })();
+
+  let myGender = null;
+  let myPrefer = 'any';
+  let myInterests = [];
+  let myMode = 'text';
+
+  const genderRow = document.getElementById('gender-row');
+  const preferRow = document.getElementById('prefer-row');
+  const interestRow = document.getElementById('interest-row');
+  const modeRow = document.getElementById('mode-row');
+  const videoHint = document.getElementById('video-hint');
+  const startBtn = document.getElementById('start-btn');
+  const agreeBox = document.getElementById('agree');
+  const premiumModal = document.getElementById('premium-modal');
+  const upgradeBtn = document.getElementById('modal-upgrade-btn');
+
+  function setupChoiceRow(row, onPick){
+    row.querySelectorAll('.choice').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        row.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+        onPick(el.dataset.g || el.dataset.m);
+      });
+    });
+  }
+  setupChoiceRow(genderRow, g => { myGender = g; validate(); });
+  setupChoiceRow(modeRow, m => { myMode = m; videoHint.style.display = m === 'video' ? 'block' : 'none'; });
+
+  function getStoredPremium(){
+    try {
+      const raw = localStorage.getItem('wl_premium');
+      if(!raw) return null;
+      const data = JSON.parse(raw);
+      if(!data.token || !data.expiresAt || Date.now() >= data.expiresAt) return null;
+      return data;
+    } catch { return null; }
+  }
+  function setStoredPremium(token, expiresAt){
+    localStorage.setItem('wl_premium', JSON.stringify({ token, expiresAt }));
+  }
+  function isUnlocked(){
+    return !!getStoredPremium();
+  }
+
+  function unlockPreferRow(){
+    preferRow.classList.remove('locked');
+    preferRow.querySelectorAll('.lock-ico').forEach(el => el.remove());
+    document.querySelector('.premium-hint').textContent = "You're on Premium — pick exactly who you talk to.";
+  }
+
+  if(isUnlocked()) unlockPreferRow();
+
+  preferRow.querySelectorAll('.choice').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const wantsSpecific = el.dataset.g !== 'any';
+      if(wantsSpecific && !isUnlocked()){
+        premiumModal.classList.add('show');
+        return;
+      }
+      preferRow.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+      el.classList.add('active');
+      myPrefer = el.dataset.g;
+      validate();
+    });
+  });
+
+  document.getElementById('modal-close-btn').addEventListener('click', ()=>{
+    premiumModal.classList.remove('show');
+  });
+
+  upgradeBtn.addEventListener('click', async ()=>{
+    upgradeBtn.disabled = true;
+    upgradeBtn.textContent = 'Loading...';
+    try {
+      const orderRes = await fetch(`${API_BASE}/api/razorpay/create-order`, { method: 'POST' });
+      const order = await orderRes.json();
+      if(!orderRes.ok || !order.orderId){
+        throw new Error(order.error || 'Could not start checkout.');
+      }
+
+      const rzp = new Razorpay({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Wavelength',
+        description: 'Premium — choose who you talk to',
+        order_id: order.orderId,
+        theme: { color: '#2F6BFF' },
+        handler: async function(response){
+          try {
+            const verifyRes = await fetch(`${API_BASE}/api/razorpay/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(response),
+            });
+            const result = await verifyRes.json();
+            if(verifyRes.ok && result.success){
+              setStoredPremium(result.token, result.expiresAt);
+              unlockPreferRow();
+              premiumModal.classList.remove('show');
+            } else {
+              alert('Payment succeeded but verification failed — please contact support before trying again.');
+            }
+          } catch (e){
+            alert('Something went wrong verifying your payment. Please contact support.');
+          }
+        },
+        modal: {
+          ondismiss: function(){
+            upgradeBtn.disabled = false;
+            upgradeBtn.textContent = 'Upgrade to Premium';
+          },
+        },
+      });
+      rzp.open();
+    } catch (err){
+      alert(err.message || 'Payments are not set up on this server yet.');
+    } finally {
+      upgradeBtn.disabled = false;
+      upgradeBtn.textContent = 'Upgrade to Premium';
+    }
+  });
+
+  agreeBox.addEventListener('change', validate);
+
+  interestRow.querySelectorAll('.interest-tag').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const i = el.dataset.i;
+      if(myInterests.includes(i)){
+        myInterests = myInterests.filter(x=>x!==i);
+        el.classList.remove('active');
+      } else {
+        myInterests.push(i);
+        el.classList.add('active');
+      }
+    });
+  });
+
+  function validate(){
+    startBtn.disabled = !(myGender && myPrefer && agreeBox.checked);
+  }
+
+  const screenSetup = document.getElementById('screen-setup');
+  const screenWaiting = document.getElementById('screen-waiting');
+  const screenChat = document.getElementById('screen-chat');
+  const app = document.getElementById('app');
+  const waitingText = document.getElementById('waiting-text');
+
+  // ---- Radar scanner animation for the waiting screen ----
+  const scannerBlips = document.getElementById('scanner-blips');
+  const freqReadout = document.getElementById('freq-readout');
+  const scanPhrase = document.getElementById('scan-phrase');
+  const SCAN_PHRASES = [
+    'scanning nearby frequencies',
+    'listening for a signal',
+    'searching the airwaves',
+    'triangulating a stranger',
+    'sweeping the dial',
+    'checking who\'s broadcasting',
+  ];
+  let scannerTimers = [];
+
+  function spawnBlip(){
+    const angle = Math.random() * Math.PI * 2;
+    // Keep blips within the visible ring area, not dead center or off the edge.
+    const radius = 30 + Math.random() * 50;
+    const x = 84 + Math.cos(angle) * radius;
+    const y = 84 + Math.sin(angle) * radius;
+    const blip = document.createElement('i');
+    blip.style.left = x + 'px';
+    blip.style.top = y + 'px';
+    scannerBlips.appendChild(blip);
+    setTimeout(()=> blip.remove(), 1700);
+  }
+
+  function startScanner(){
+    stopScanner();
+    scannerTimers.push(setInterval(spawnBlip, 420));
+    scannerTimers.push(setInterval(()=>{
+      const freq = (87 + Math.random() * 20).toFixed(1);
+      freqReadout.textContent = freq;
+    }, 260));
+    let phraseIdx = 0;
+    scanPhrase.textContent = SCAN_PHRASES[0];
+    scannerTimers.push(setInterval(()=>{
+      phraseIdx = (phraseIdx + 1) % SCAN_PHRASES.length;
+      scanPhrase.style.opacity = '0';
+      setTimeout(()=>{
+        scanPhrase.textContent = SCAN_PHRASES[phraseIdx];
+        scanPhrase.style.opacity = '0.8';
+      }, 200);
+    }, 2400));
+  }
+
+  function stopScanner(){
+    scannerTimers.forEach(clearInterval);
+    scannerTimers = [];
+    scannerBlips.innerHTML = '';
+  }
+
+  function showScreen(name){
+    screenSetup.style.display = name === 'setup' ? 'block' : 'none';
+    screenWaiting.style.display = name === 'waiting' ? 'block' : 'none';
+    screenChat.classList.toggle('show', name === 'chat');
+    app.classList.toggle('wide', name === 'chat');
+    if(name === 'waiting') startScanner(); else stopScanner();
+  }
+
+  startBtn.addEventListener('click', ()=>{
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, mode: myMode, premiumToken: (getStoredPremium() || {}).token });
+    showScreen('waiting');
+    waitingText.textContent = 'Tuning in to a stranger...';
+  });
+
+  document.getElementById('cancel-btn').addEventListener('click', ()=>{
+    socket.emit('leave');
+    showScreen('setup');
+  });
+
+  window.addEventListener('beforeunload', stopVideoCall);
+
+  socket.on('waiting', ()=>{
+    waitingText.textContent = 'No one nearby yet — still searching...';
+  });
+
+  (function checkDirectConnect(){
+    const params = new URLSearchParams(window.location.search);
+    const withUser = params.get('with');
+    if(withUser && getAuth()){
+      showScreen('waiting');
+      waitingText.textContent = `Reaching out to ${withUser}...`;
+      socket.emit('direct-connect', { username: withUser });
+    }
+  })();
+
+  const messagesEl = document.getElementById('messages');
+  const peerAvatar = document.getElementById('peer-avatar');
+  const peerState = document.getElementById('peer-state');
+  const peerNameEl = document.getElementById('peer-name');
+  const typingRow = document.getElementById('typing-row');
+  const msgInput = document.getElementById('msg-input');
+
+  const messageEls = {};
+  const messageReactions = {}; 
+  function genId(){ return 'm' + Date.now() + Math.random().toString(36).slice(2,8); }
+  const REACTION_EMOJIS = ['👍','❤️','😂','😮'];
+
+  // Global dismiss for open reaction bars
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.reaction-bar') && !e.target.closest('.msg')){
+      document.querySelectorAll('.reaction-bar.visible').forEach(bar => bar.classList.remove('visible'));
+    }
+  });
+
+  // Reaction Details Sheet
+  const reactionModal = document.getElementById('reaction-modal');
+  const reactionSheetList = document.getElementById('reaction-sheet-list');
+  document.getElementById('close-reaction-modal').addEventListener('click', ()=>{
+    reactionModal.classList.remove('show');
+  });
+  reactionModal.addEventListener('click', (e)=>{
+    if(e.target === reactionModal) reactionModal.classList.remove('show');
+  });
+
+  function openReactionSheet(id){
+    const reactions = messageReactions[id] || {};
+    reactionSheetList.innerHTML = '';
+    const auth = getAuth();
+    const myName = auth ? auth.username : 'You';
+
+    Object.entries(reactions).forEach(([user, emoji])=>{
+      const item = document.createElement('div');
+      item.className = 'reaction-sheet-item';
+      
+      const isMe = (user === myName || user === 'You');
+      item.innerHTML = `
+        <div class="reaction-sheet-user">
+          <span style="font-size:18px;">${emoji}</span>
+          <span>${escapeHtml(user)} ${isMe ? '(You)' : ''}</span>
+        </div>
+      `;
+
+      if(isMe){
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'reaction-sheet-remove';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', ()=>{
+          delete messageReactions[id][myName];
+          const el = messageEls[id];
+          if(el){
+            const bar = el.querySelector('.reaction-bar');
+            if(bar) bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          }
+          socket.emit('reaction', { id, emoji: null, user: myName });
+          renderReactions(id);
+          reactionModal.classList.remove('show');
+        });
+        item.appendChild(removeBtn);
+      }
+
+      reactionSheetList.appendChild(item);
+    });
+
+    reactionModal.classList.add('show');
+  }
+
+  function addMessage(content, cls, kind, id){
+    const div = document.createElement('div');
+    div.className = 'msg ' + cls + (kind ? ' msg-' + kind : '');
+    if(kind === 'gif'){
+      const img = document.createElement('img');
+      img.src = content;
+      img.alt = 'GIF';
+      img.loading = 'lazy';
+      div.appendChild(img);
+    } else if(kind === 'sticker'){
+      div.textContent = content;
+      div.classList.add('sticker-msg');
+    } else if(kind === 'prompt'){
+      div.textContent = '💡 ' + content;
+    } else {
+      div.textContent = content;
+    }
+
+    if(id && kind !== 'prompt'){
+      div.dataset.id = id;
+      messageEls[id] = div;
+      messageReactions[id] = {};
+
+      const bar = document.createElement('div');
+      bar.className = 'reaction-bar';
+
+      REACTION_EMOJIS.forEach(emoji=>{
+        const btn = document.createElement('button');
+        btn.textContent = emoji;
+        btn.dataset.emoji = emoji;
+        btn.addEventListener('click', (e)=>{
+          e.stopPropagation();
+          const auth = getAuth();
+          const myName = auth ? auth.username : 'You';
+          const currentEmoji = messageReactions[id][myName];
+
+          if(currentEmoji === emoji){
+            delete messageReactions[id][myName];
+            btn.classList.remove('active');
+            socket.emit('reaction', { id, emoji: null, user: myName });
+          } else {
+            messageReactions[id][myName] = emoji;
+            bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            socket.emit('reaction', { id, emoji, user: myName });
+          }
+          renderReactions(id);
+          bar.classList.remove('visible');
+        });
+        bar.appendChild(btn);
+      });
+      div.appendChild(bar);
+
+      // WhatsApp Reaction Badge (circular for single emoji, pill for multiple)
+      const badge = document.createElement('div');
+      badge.className = 'wa-reaction-badge';
+      badge.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        openReactionSheet(id);
+      });
+      div.appendChild(badge);
+
+      // --- Hold / Long-press trigger ---
+      let pressTimer;
+      const startHold = () => {
+        pressTimer = setTimeout(()=>{
+          document.querySelectorAll('.reaction-bar.visible').forEach(b => b.classList.remove('visible'));
+          bar.classList.add('visible');
+        }, 400);
+      };
+      const cancelHold = () => clearTimeout(pressTimer);
+
+      div.addEventListener('touchstart', startHold, { passive: true });
+      div.addEventListener('touchend', cancelHold);
+      div.addEventListener('touchmove', cancelHold);
+      div.addEventListener('mousedown', startHold);
+      div.addEventListener('mouseup', cancelHold);
+      div.addEventListener('mouseleave', cancelHold);
+      
+      div.addEventListener('contextmenu', (e)=>{
+        e.preventDefault();
+        document.querySelectorAll('.reaction-bar.visible').forEach(b => b.classList.remove('visible'));
+        bar.classList.add('visible');
+      });
+    }
+
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function renderReactions(id){
+    const el = messageEls[id];
+    if(!el) return;
+    const badge = el.querySelector('.wa-reaction-badge');
+    if(!badge) return;
+
+    const reactions = messageReactions[id] || {};
+    const emojis = Object.values(reactions).filter(Boolean);
+
+    if(emojis.length === 0){
+      badge.classList.remove('show', 'multi');
+      badge.innerHTML = '';
+      return;
+    }
+
+    const unique = [...new Set(emojis)];
+    const isMulti = emojis.length > 1;
+
+    badge.classList.toggle('multi', isMulti);
+    badge.innerHTML = `${unique.join('')}${isMulti ? `<span style="font-weight:600;margin-left:2px;font-size:11px;">${emojis.length}</span>` : ''}`;
+    badge.classList.add('show');
+  }
+
+  socket.on('reaction', ({ id, emoji, user })=>{
+    if(!id || !messageReactions[id]) return;
+    const partnerName = currentPartnerUsername || 'Stranger';
+    const reactor = user || partnerName;
+
+    if(!emoji){
+      delete messageReactions[id][reactor];
+    } else {
+      messageReactions[id][reactor] = emoji;
+    }
+    renderReactions(id);
+  });
+
+  const INTEREST_LABELS = {
+    music:'🎧 Music', gaming:'🎮 Gaming', movies:'🎬 Movies', sports:'⚽ Sports',
+    art:'🎨 Art', books:'📚 Books', anime:'🌀 Anime', tech:'💻 Tech',
+    travel:'✈️ Travel', food:'🍜 Food'
+  };
+  const matchFlash = document.getElementById('match-flash');
+  const flashShared = document.getElementById('flash-shared');
+  const sharedInterestsRow = document.getElementById('shared-interests-row');
+
+  const addContactBtn = document.getElementById('add-contact-btn');
+  let currentPartnerUsername = null;
+  let currentPartnerInterests = [];
+
+  // ============================================================
+  // WebRTC video calling
+  // ============================================================
+  const videoCallEl = document.getElementById('video-call');
+  const remoteVideoEl = document.getElementById('remote-video');
+  const localVideoEl = document.getElementById('local-video');
+  const videoStatusEl = document.getElementById('video-status');
+  const toggleMicBtn = document.getElementById('toggle-mic-btn');
+  const toggleCamBtn = document.getElementById('toggle-cam-btn');
+
+  let peerConnection = null;
+  let localStream = null;
+  let currentMode = 'text';
+
+  // Google's public STUN server — enough to establish a call on most
+  // home/mobile networks. For more reliable connections behind strict
+  // corporate or carrier NATs, add a TURN server here too (e.g. a free
+  // tier from Twilio, Xirsys, or a self-hosted coturn instance):
+  // { urls: 'turn:your-turn-server', username: '...', credential: '...' }
+  const RTC_CONFIG = {
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  };
+
+  async function startVideoCall(isInitiator){
+    videoCallEl.style.display = 'block';
+    videoStatusEl.textContent = 'Connecting camera...';
+
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    } catch (err) {
+      videoStatusEl.textContent = "Couldn't access camera/mic — check your browser permissions.";
+      addMessage("Video call needs camera and mic access. You can still chat by text below.", 'sys');
+      return;
+    }
+    localVideoEl.srcObject = localStream;
+
+    peerConnection = new RTCPeerConnection(RTC_CONFIG);
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+    peerConnection.ontrack = (event) => {
+      remoteVideoEl.srcObject = event.streams[0];
+      videoStatusEl.textContent = '';
+    };
+
+    peerConnection.onicecandidate = (event) => {
+      if(event.candidate){
+        socket.emit('webrtc-signal', { type: 'ice-candidate', candidate: event.candidate });
+      }
+    };
+
+    peerConnection.onconnectionstatechange = () => {
+      if(peerConnection && (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed')){
+        videoStatusEl.textContent = 'Connection lost.';
+      }
+    };
+
+    if(isInitiator){
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+      socket.emit('webrtc-signal', { type: 'offer', sdp: offer });
+    }
+  }
+
+  function stopVideoCall(){
+    if(localStream){
+      localStream.getTracks().forEach(t => t.stop());
+      localStream = null;
+    }
+    if(peerConnection){
+      peerConnection.close();
+      peerConnection = null;
+    }
+    remoteVideoEl.srcObject = null;
+    localVideoEl.srcObject = null;
+    videoCallEl.style.display = 'none';
+  }
+
+  socket.on('webrtc-signal', async (payload) => {
+    if(!peerConnection) return;
+    try {
+      if(payload.type === 'offer'){
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.emit('webrtc-signal', { type: 'answer', sdp: answer });
+      } else if(payload.type === 'answer'){
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+      } else if(payload.type === 'ice-candidate' && payload.candidate){
+        await peerConnection.addIceCandidate(new RTCIceCandidate(payload.candidate));
+      }
+    } catch (err) {
+      console.error('[webrtc] signaling error', err);
+    }
+  });
+
+  toggleMicBtn.addEventListener('click', ()=>{
+    if(!localStream) return;
+    const track = localStream.getAudioTracks()[0];
+    if(!track) return;
+    track.enabled = !track.enabled;
+    toggleMicBtn.classList.toggle('muted', !track.enabled);
+    toggleMicBtn.textContent = track.enabled ? '🎤' : '🔇';
+  });
+
+  toggleCamBtn.addEventListener('click', ()=>{
+    if(!localStream) return;
+    const track = localStream.getVideoTracks()[0];
+    if(!track) return;
+    track.enabled = !track.enabled;
+    toggleCamBtn.classList.toggle('muted', !track.enabled);
+  });
+
+  socket.on('matched', ({ partnerGender, shared, partnerUsername, history, mode, isInitiator })=>{
+    currentMode = mode || 'text';
+    if(currentMode === 'video'){
+      startVideoCall(!!isInitiator);
+    } else {
+      videoCallEl.style.display = 'none';
+    }
+    messagesEl.innerHTML = '';
+    const initial = partnerGender === 'female' ? 'F' : partnerGender === 'male' ? 'M' : '?';
+    peerAvatar.textContent = initial;
+    peerAvatar.className = 'avatar' + (partnerGender === 'female' ? ' female' : '');
+    peerState.textContent = 'connected';
+    currentPartnerUsername = partnerUsername || null;
+    currentPartnerInterests = shared || [];
+    
+    peerNameEl.textContent = partnerUsername || 'Stranger';
+    peerNameEl.classList.toggle('registered-user', !!partnerUsername);
+    if(partnerUsername){
+      peerNameEl.title = "View profile";
+    } else {
+      peerNameEl.removeAttribute('title');
+    }
+
+    addContactBtn.style.display = (partnerUsername && getAuth()) ? '' : 'none';
+    addContactBtn.disabled = false;
+    addContactBtn.textContent = '+ Friend';
+
+    if(history && history.length){
+      history.forEach(m=>{
+        const cls = m.fromUsername === (getAuth() || {}).username ? 'me' : 'them';
+        if(m.type === 'gif') addMessage(m.url, cls, 'gif', m.id);
+        else if(m.type === 'sticker') addMessage(m.emoji, cls, 'sticker', m.id);
+        else addMessage(m.text, cls, null, m.id);
+      });
+      addMessage(`You're back with ${partnerUsername}. Picking up where you left off.`, 'sys');
+    } else {
+      addMessage(partnerUsername ? `You're connected with ${partnerUsername}. Say hi.` : "You're connected with a stranger. Say hi.", 'sys');
+    }
+
+    // Save initial session to Recent Chats
+    saveRecentChat(partnerUsername || 'Anonymous Stranger', 'Connected');
+
+    sharedInterestsRow.innerHTML = '';
+    if(shared && shared.length){
+      sharedInterestsRow.style.display = 'flex';
+      shared.forEach(i=>{
+        const chip = document.createElement('span');
+        chip.className = 'shared-chip';
+        chip.textContent = INTEREST_LABELS[i] || i;
+        sharedInterestsRow.appendChild(chip);
+      });
+      flashShared.textContent = `${shared.length} shared frequenc${shared.length===1?'y':'ies'}: ` + shared.map(i=>INTEREST_LABELS[i]||i).join(' · ');
+    } else {
+      sharedInterestsRow.style.display = 'none';
+      flashShared.textContent = 'New frequency found';
+    }
+
+    matchFlash.classList.add('show');
+    setTimeout(()=> matchFlash.classList.remove('show'), 1000);
+
+    showScreen('chat');
+    msgInput.focus();
+  });
+
+  // Profile Modal logic for registered users
+  const profileModal = document.getElementById('profile-modal');
+  peerNameEl.addEventListener('click', ()=>{
+    if(!currentPartnerUsername) return; // Only for registered accounts
+    document.getElementById('profile-modal-username').textContent = currentPartnerUsername;
+    document.getElementById('profile-modal-avatar').textContent = peerAvatar.textContent;
+    
+    const chipBox = document.getElementById('profile-modal-interests');
+    chipBox.innerHTML = '';
+    if(currentPartnerInterests.length){
+      currentPartnerInterests.forEach(i=>{
+        const span = document.createElement('span');
+        span.className = 'shared-chip';
+        span.textContent = INTEREST_LABELS[i] || i;
+        chipBox.appendChild(span);
+      });
+    }
+    profileModal.classList.add('show');
+  });
+  document.getElementById('profile-modal-close').addEventListener('click', ()=>{
+    profileModal.classList.remove('show');
+  });
+
+  // Recent Chats storage & modal logic
+  function saveRecentChat(name, lastMessage){
+    const history = JSON.parse(localStorage.getItem('wl_recent_chats') || '[]');
+    const filtered = history.filter(item => item.name !== name);
+    filtered.unshift({
+      name: name,
+      lastMessage: lastMessage,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    });
+    localStorage.setItem('wl_recent_chats', JSON.stringify(filtered.slice(0, 15)));
+  }
+
+  const recentModal = document.getElementById('recent-chats-modal');
+  const recentChatsList = document.getElementById('recent-chats-list');
+  document.getElementById('nav-recent-chats').addEventListener('click', (e)=>{
+    e.preventDefault();
+    const history = JSON.parse(localStorage.getItem('wl_recent_chats') || '[]');
+    recentChatsList.innerHTML = '';
+    if(!history.length){
+      recentChatsList.innerHTML = '<p style="color:#888; text-align:center; padding: 20px 0;">No recent conversations found.</p>';
+    } else {
+      history.forEach(c=>{
+        const row = document.createElement('div');
+        row.style.cssText = 'padding: 10px 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);';
+        row.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-weight:600; font-size:14px; margin-bottom:3px;">
+            <span>${escapeHtml(c.name)}</span>
+            <span style="font-size:11px; opacity:0.6;">${c.time}</span>
+          </div>
+          <div style="font-size:12px; opacity:0.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            ${escapeHtml(c.lastMessage)}
+          </div>
+        `;
+        recentChatsList.appendChild(row);
+      });
+    }
+    recentModal.classList.add('show');
+  });
+  document.getElementById('recent-modal-close').addEventListener('click', ()=>{
+    recentModal.classList.remove('show');
+  });
+
+  addContactBtn.addEventListener('click', ()=>{
+    addContactBtn.disabled = true;
+    addContactBtn.textContent = 'Request sent';
+    socket.emit('add-contact');
+  });
+
+  socket.on('friend-request-sent', ({ toUsername })=>{
+    addMessage(`Friend request sent to ${toUsername}.`, 'sys');
+  });
+
+  socket.on('friend-request', ({ fromUsername })=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'friend-request-msg';
+    wrap.innerHTML = `
+      <p>${escapeHtml(fromUsername)} wants to add you as a friend.</p>
+      <div class="fr-actions">
+        <button class="fr-accept">Accept</button>
+        <button class="fr-decline">Decline</button>
+      </div>
+    `;
+    messagesEl.appendChild(wrap);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    wrap.querySelector('.fr-accept').addEventListener('click', ()=>{
+      socket.emit('respond-friend-request', { accept: true });
+      wrap.remove();
+    });
+    wrap.querySelector('.fr-decline').addEventListener('click', ()=>{
+      socket.emit('respond-friend-request', { accept: false });
+      wrap.remove();
+      addMessage("You declined the friend request.", 'sys');
+    });
+  });
+
+  socket.on('friend-request-declined', ({ username })=>{
+    addContactBtn.disabled = false;
+    addContactBtn.textContent = '+ Friend';
+    addMessage(`${username} declined your friend request.`, 'sys');
+  });
+
+  socket.on('add-contact-result', ({ success, username, error })=>{
+    if(success){
+      addContactBtn.textContent = '✓ Friends';
+      addMessage(`You and ${username} are now friends. Find them anytime on the Friends page.`, 'sys');
+    } else {
+      addContactBtn.disabled = false;
+      addContactBtn.textContent = '+ Friend';
+      addMessage(error || 'Could not add friend.', 'sys');
+    }
+  });
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  socket.on('contact-offline', ({ username })=>{
+    waitingText.textContent = `${username || 'They'} aren't online right now.`;
+    setTimeout(()=> showScreen('setup'), 1800);
+  });
+
+  function sendMessage(){
+    const text = msgInput.value.trim();
+    if(!text) return;
+    const id = genId();
+    socket.emit('chat-message', { type: 'text', text, id });
+    addMessage(text, 'me', null, id);
+    saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', text);
+    msgInput.value = '';
+    socket.emit('typing', false);
+  }
+
+  document.getElementById('send-btn').addEventListener('click', sendMessage);
+  msgInput.addEventListener('keydown', e=>{
+    if(e.key === 'Enter') sendMessage();
+    else socket.emit('typing', true);
+  });
+  let typingTimeout;
+  msgInput.addEventListener('input', ()=>{
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(()=> socket.emit('typing', false), 1200);
+  });
+
+  socket.on('chat-message', (payload)=>{
+    if(!payload) return;
+    if(payload.type === 'gif') {
+      addMessage(payload.url, 'them', 'gif', payload.id);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a GIF');
+    } else if(payload.type === 'sticker') {
+      addMessage(payload.emoji, 'them', 'sticker', payload.id);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a sticker ' + payload.emoji);
+    } else {
+      addMessage(payload.text, 'them', null, payload.id);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', payload.text);
+    }
+  });
+
+  socket.on('icebreaker', (text)=>{
+    addMessage(text, 'sys', 'prompt');
+  });
+
+  const ICEBREAKERS = [
+    "What's a small thing that made you smile this week?",
+    "Cats or dogs, and why is your answer correct?",
+    "What's a song you'd never admit to loving?",
+    "If you could teleport anywhere right now, where?",
+    "What's the last thing you binge-watched?",
+    "Tea or coffee — settle the debate.",
+    "What's a hot take you'll actually defend?",
+    "Best meal you've had this month?",
+  ];
+  document.getElementById('topic-btn').addEventListener('click', ()=>{
+    const t = ICEBREAKERS[Math.floor(Math.random()*ICEBREAKERS.length)];
+    socket.emit('icebreaker', t);
+    addMessage(t, 'sys', 'prompt');
+  });
+
+  // ----- Sticker picker -----
+  const STICKERS = ['😂','😍','🔥','👋','😎','🤯','💀','😭','👀','💯','🎉','😴','🤝','😏','👏','🙌','😅','🥲','😤','🫡','🤔','😈','💬','⚡'];
+  const stickerPanel = document.getElementById('sticker-panel');
+  STICKERS.forEach(emoji=>{
+    const btn = document.createElement('button');
+    btn.className = 'sticker-btn';
+    btn.textContent = emoji;
+    btn.addEventListener('click', ()=>{
+      const id = genId();
+      socket.emit('chat-message', { type: 'sticker', emoji, id });
+      addMessage(emoji, 'me', 'sticker', id);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a sticker ' + emoji);
+      stickerPanel.classList.remove('show');
+    });
+    stickerPanel.appendChild(btn);
+  });
+
+  const stickerToggleBtn = document.getElementById('sticker-toggle-btn');
+  const gifToggleBtn = document.getElementById('gif-toggle-btn');
+  const gifPanel = document.getElementById('gif-panel');
+  stickerToggleBtn.addEventListener('click', ()=>{
+    gifPanel.classList.remove('show');
+    stickerPanel.classList.toggle('show');
+  });
+  gifToggleBtn.addEventListener('click', ()=>{
+    stickerPanel.classList.remove('show');
+    gifPanel.classList.toggle('show');
+    if(gifPanel.classList.contains('show')) searchGifs('trending');
+  });
+
+  // ----- GIF picker (GIPHY API) -----
+  const gifGrid = document.getElementById('gif-grid');
+  const gifSearch = document.getElementById('gif-search');
+  let gifSearchTimeout;
+
+  async function searchGifs(query){
+    if(!window.GIPHY_KEY || window.GIPHY_KEY === 'YOUR_GIPHY_API_KEY'){
+      gifGrid.innerHTML = '<div class="gif-empty">Add a Giphy API key to enable GIF search.</div>';
+      return;
+    }
+    gifGrid.innerHTML = '<div class="gif-empty">Loading...</div>';
+    
+    const isTrending = !query || query === 'trending';
+    const endpoint = isTrending
+      ? `https://api.giphy.com/v1/gifs/trending?api_key=${window.GIPHY_KEY}&limit=18&rating=g`
+      : `https://api.giphy.com/v1/gifs/search?api_key=${window.GIPHY_KEY}&q=${encodeURIComponent(query)}&limit=18&rating=g`;
+
+    try{
+      const res = await fetch(endpoint);
+      const data = await res.json();
+      gifGrid.innerHTML = '';
+
+      if(!data.data || data.data.length === 0){
+        gifGrid.innerHTML = '<div class="gif-empty">No GIFs found.</div>';
+        return;
+      }
+
+      data.data.forEach(item=>{
+        const displayUrl = item.images?.fixed_height?.url || item.images?.original?.url;
+        const sendUrl = item.images?.original?.url || displayUrl;
+        if(!displayUrl) return;
+
+        const img = document.createElement('img');
+        img.src = displayUrl;
+        img.alt = item.title || 'GIF';
+        img.loading = 'lazy';
+        img.addEventListener('click', ()=>{
+          const id = genId();
+          socket.emit('chat-message', { type: 'gif', url: sendUrl, id });
+          addMessage(sendUrl, 'me', 'gif', id);
+          saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a GIF');
+          gifPanel.classList.remove('show');
+        });
+        gifGrid.appendChild(img);
+      });
+    }catch(e){
+      gifGrid.innerHTML = '<div class="gif-empty">Couldn\'t load GIFs right now.</div>';
+    }
+  }
+
+  gifSearch.addEventListener('input', ()=>{
+    clearTimeout(gifSearchTimeout);
+    gifSearchTimeout = setTimeout(()=>{
+      const q = gifSearch.value.trim();
+      searchGifs(q || 'trending');
+    }, 400);
+  });
+
+  socket.on('typing', (isTyping)=>{
+    typingRow.textContent = isTyping ? 'Stranger is typing...' : '';
+  });
+
+  socket.on('partner-left', ()=>{
+    peerState.textContent = 'disconnected';
+    addMessage('Stranger has left the chat.', 'sys');
+    stopVideoCall();
+  });
+
+  document.getElementById('skip-btn').addEventListener('click', ()=>{
+    stopVideoCall();
+    socket.emit('skip');
+  });
+  socket.on('ready-to-requeue', ()=>{
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, mode: myMode, premiumToken: (getStoredPremium() || {}).token });
+    showScreen('waiting');
+    waitingText.textContent = 'Finding a new stranger...';
+  });
+
+  document.getElementById('leave-btn').addEventListener('click', ()=>{
+    stopVideoCall();
+    socket.emit('leave');
+    showScreen('setup');
+  });
+
+  document.getElementById('report-btn').addEventListener('click', ()=>{
+    stopVideoCall();
+    socket.emit('report');
+    addMessage('You reported this stranger and left the chat.', 'sys');
+    setTimeout(()=> showScreen('setup'), 900);
+  });
+</script>
+</body>
+</html>
