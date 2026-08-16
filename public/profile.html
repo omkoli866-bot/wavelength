@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Profile — Wavelength</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="stars-layer stars-small" aria-hidden="true"></div>
+<div class="stars-layer stars-medium" aria-hidden="true"></div>
+<div class="stars-layer stars-large" aria-hidden="true"></div>
+
+<nav class="site-nav">
+  <div class="nav-left">
+    <a href="index.html" class="brand"><svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
+      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18">
+        <animate attributeName="opacity" values="0.10;0.28;0.10" dur="2.4s" repeatCount="indefinite"/>
+      </path>
+      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="6 5">
+        <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="1.1s" repeatCount="indefinite"/>
+      </path>
+      <circle cx="10" cy="30" r="3" fill="#FF7A9C">
+        <animate attributeName="r" values="2.4;3.6;2.4" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="52" cy="30" r="3" fill="#FF7A9C">
+        <animate attributeName="r" values="3.6;2.4;3.6" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+    </svg> Wavelength</a>
+    <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
+  </div>
+  <div class="links">
+    <a href="friends.html">Friends</a>
+    <a href="guidelines.html">Guidelines</a>
+    <a href="#" id="nav-logout">Log out</a>
+    <a href="chat.html" class="cta">Start chatting</a>
+  </div>
+</nav>
+
+<div class="doc" id="signed-out-notice" style="display:none;">
+  <h1>Sign in to see your profile</h1>
+  <p>Profiles are only available for registered accounts. <a href="login.html" style="color:var(--signal);">Sign in</a> or <a href="register.html" style="color:var(--signal);">create an account</a> — both are free.</p>
+</div>
+
+<div class="app-wrap" id="profile-view" style="display:none;">
+<div class="app">
+  <div class="card" style="text-align:center;">
+    <div class="avatar" id="profile-avatar" style="margin:0 auto 16px; font-size:32px; width:76px; height:76px; line-height:76px;">?</div>
+    <h1 id="profile-username" style="margin-bottom:4px;">Username</h1>
+    <p class="sub" style="margin-bottom:0;">Registered member</p>
+    <p class="updated" id="profile-since" style="margin:6px 0 26px;"></p>
+
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <span class="profile-stat-num" id="stat-friends">0</span>
+        <span class="profile-stat-label">Friends</span>
+      </div>
+      <div class="profile-stat">
+        <span class="profile-stat-num" id="stat-chats">0</span>
+        <span class="profile-stat-label">Conversations</span>
+      </div>
+    </div>
+
+    <a href="friends.html" class="btn secondary" style="display:block; text-decoration:none; margin-bottom:10px;">View friends</a>
+    <button class="btn" id="logout-btn">Log out</button>
+    <p class="footnote">Signed in as this account on this device.</p>
+  </div>
+</div>
+</div>
+
+<script>
+  const API_BASE = ""; // Set to your live Render URL once deployed.
+
+  function getAuth(){
+    const token = localStorage.getItem('wl_auth_token');
+    const username = localStorage.getItem('wl_username');
+    return token && username ? { token, username } : null;
+  }
+
+  const auth = getAuth();
+
+  function doLogout(){
+    localStorage.removeItem('wl_auth_token');
+    localStorage.removeItem('wl_username');
+    window.location.href = 'index.html';
+  }
+  document.getElementById('nav-logout').addEventListener('click', (e)=>{ e.preventDefault(); doLogout(); });
+  document.getElementById('logout-btn').addEventListener('click', doLogout);
+
+  if(!auth){
+    document.getElementById('signed-out-notice').style.display = 'block';
+  } else {
+    loadProfile();
+  }
+
+  async function loadProfile(){
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${auth.token}` },
+      });
+      const data = await res.json();
+      if(!data.loggedIn){
+        doLogout();
+        return;
+      }
+      document.getElementById('profile-view').style.display = 'flex';
+      document.getElementById('profile-username').textContent = data.username;
+      document.getElementById('profile-avatar').textContent = data.username.charAt(0).toUpperCase();
+      if(data.memberSince){
+        const d = new Date(data.memberSince);
+        document.getElementById('profile-since').textContent =
+          'Member since ' + d.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      }
+      document.getElementById('stat-friends').textContent = data.friendCount ?? 0;
+
+      // Conversation count reuses the same history endpoint the Friends
+      // page uses, just to get a count — no need for a separate API.
+      const histRes = await fetch(`${API_BASE}/api/history`, {
+        headers: { Authorization: `Bearer ${auth.token}` },
+      });
+      const hist = await histRes.json();
+      document.getElementById('stat-chats').textContent = (hist.conversations || []).length;
+    } catch (err) {
+      console.error('[profile] failed to load', err);
+    }
+  }
+</script>
+</body>
+</html>
