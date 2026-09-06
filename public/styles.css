@@ -717,6 +717,45 @@ a{color:inherit;}
   line-height:1.5;
 }
 
+/* ===== Feature/people section ===== */
+.feature-people{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:18px;
+}
+@media (max-width:900px){
+  .feature-people{ grid-template-columns:repeat(2, 1fr); }
+}
+@media (max-width:600px){
+  .feature-people{ grid-template-columns:1fr; }
+}
+.feature-person{
+  background:linear-gradient(180deg, var(--panel), var(--panel-2));
+  border-radius:16px;
+  padding:22px 18px;
+  text-align:center;
+}
+.person-avatar{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  margin:0 auto 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.feature-person h4{
+  font-size:14.5px;
+  margin:0 0 6px;
+  color:var(--text);
+}
+.feature-person p{
+  margin:0;
+  color:var(--muted);
+  font-size:12.5px;
+  line-height:1.5;
+}
+
 /* ===== Content pages (guidelines / privacy) ===== */
 .doc{
   max-width:720px;
@@ -850,6 +889,37 @@ h1{
   font-size:12px;
   color:var(--muted);
   line-height:1.5;
+}
+
+/* ===== Camera preview during video-mode setup ===== */
+.camera-preview-wrap{
+  margin-bottom:20px;
+  border-radius:14px;
+  overflow:hidden;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+}
+.camera-preview-wrap video{
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  background:#000;
+  transform:scaleX(-1); /* mirror, like looking in a mirror rather than a stranger's view */
+}
+.camera-preview-label{
+  margin:0;
+  padding:8px 12px;
+  font-size:12px;
+  color:var(--muted);
+  text-align:center;
+}
+/* Card takes on a rose accent while Video is selected, so the whole
+   setup screen visually shifts, not just the toggle itself. */
+#screen-setup.mode-video{
+  border-top:3px solid var(--rose);
+}
+#screen-setup.mode-video #start-btn{
+  background:var(--rose);
 }
 
 .modal-backdrop{
