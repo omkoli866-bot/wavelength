@@ -202,7 +202,7 @@
     <h1 id="setup-heading">Find a signal.</h1>
     <p class="sub" id="setup-subheading">Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.</p>
 
-    <div class="field">
+    <div class="field" id="mode-field">
       <label>Chat type</label>
       <div class="choice-row" id="mode-row">
         <div class="choice active" data-m="text">💬 Text chat</div>
@@ -498,8 +498,10 @@
     }
   }
 
-  // Arriving from the landing page's Text/Video card pre-selects the
-  // matching choice here, so the choice made there actually sticks.
+  // Arriving from the landing page's Text/Video card locks in that choice
+  // here — the toggle itself is hidden, so there's no going back to the
+  // other mode without returning to the landing page. Each mode is meant
+  // to feel like its own distinct path, not two options on one screen.
   (function preselectModeFromQuery(){
     const params = new URLSearchParams(window.location.search);
     const wantedMode = params.get('mode');
@@ -511,6 +513,7 @@
         myMode = wantedMode;
         applyModeUI(wantedMode);
       }
+      document.getElementById('mode-field').style.display = 'none';
     }
   })();
 
