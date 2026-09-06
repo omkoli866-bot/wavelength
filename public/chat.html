@@ -448,6 +448,22 @@
   setupChoiceRow(genderRow, g => { myGender = g; validate(); });
   setupChoiceRow(modeRow, m => { myMode = m; videoHint.style.display = m === 'video' ? 'block' : 'none'; });
 
+  // Arriving from the landing page's Text/Video card pre-selects the
+  // matching choice here, so the choice made there actually sticks.
+  (function preselectModeFromQuery(){
+    const params = new URLSearchParams(window.location.search);
+    const wantedMode = params.get('mode');
+    if(wantedMode === 'text' || wantedMode === 'video'){
+      const target = modeRow.querySelector(`.choice[data-m="${wantedMode}"]`);
+      if(target){
+        modeRow.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+        target.classList.add('active');
+        myMode = wantedMode;
+        videoHint.style.display = wantedMode === 'video' ? 'block' : 'none';
+      }
+    }
+  })();
+
   function getStoredPremium(){
     try {
       const raw = localStorage.getItem('wl_premium');
