@@ -199,8 +199,8 @@
 
   <!-- Screen 1: Setup -->
   <div class="card" id="screen-setup">
-    <h1>Find a signal.</h1>
-    <p class="sub">Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.</p>
+    <h1 id="setup-heading">Find a signal.</h1>
+    <p class="sub" id="setup-subheading">Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.</p>
 
     <div class="field">
       <label>Chat type</label>
@@ -209,6 +209,11 @@
         <div class="choice" data-m="video">📹 Video chat</div>
       </div>
       <p class="premium-hint" id="video-hint" style="display:none;">Video chat needs camera and mic access. You'll be asked to allow it once you start.</p>
+    </div>
+
+    <div class="camera-preview-wrap" id="camera-preview-wrap" style="display:none;">
+      <video id="setup-camera-preview" autoplay muted playsinline></video>
+      <p class="camera-preview-label" id="camera-preview-label">Checking your camera...</p>
     </div>
 
     <div class="field">
@@ -252,7 +257,7 @@
     </div>
 
     <button class="btn" id="start-btn" disabled>Start chatting</button>
-    <p class="footnote">Be someone worth talking to.</p>
+    <p class="footnote" id="setup-footnote">Be someone worth talking to.</p>
   </div>
 
   <!-- Premium upsell modal -->
@@ -446,7 +451,52 @@
     });
   }
   setupChoiceRow(genderRow, g => { myGender = g; validate(); });
-  setupChoiceRow(modeRow, m => { myMode = m; videoHint.style.display = m === 'video' ? 'block' : 'none'; });
+  setupChoiceRow(modeRow, m => { myMode = m; applyModeUI(m); });
+
+  const setupCard = document.getElementById('screen-setup');
+  const setupHeading = document.getElementById('setup-heading');
+  const setupSubheading = document.getElementById('setup-subheading');
+  const setupFootnote = document.getElementById('setup-footnote');
+  const cameraPreviewWrap = document.getElementById('camera-preview-wrap');
+  const cameraPreviewVideo = document.getElementById('setup-camera-preview');
+  const cameraPreviewLabel = document.getElementById('camera-preview-label');
+  let previewStream = null;
+
+  async function startCameraPreview(){
+    cameraPreviewLabel.textContent = 'Checking your camera...';
+    try {
+      previewStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      cameraPreviewVideo.srcObject = previewStream;
+      cameraPreviewLabel.textContent = "You're all set — this is what they'll see.";
+    } catch (err) {
+      cameraPreviewLabel.textContent = "Camera access denied — you can still try, or switch to text chat.";
+    }
+  }
+  function stopCameraPreview(){
+    if(previewStream){
+      previewStream.getTracks().forEach(t => t.stop());
+      previewStream = null;
+    }
+    cameraPreviewVideo.srcObject = null;
+  }
+
+  function applyModeUI(m){
+    videoHint.style.display = m === 'video' ? 'block' : 'none';
+    setupCard.classList.toggle('mode-video', m === 'video');
+    if(m === 'video'){
+      setupHeading.textContent = 'Get face to face.';
+      setupSubheading.textContent = "Camera on, meet a real stranger live. Skip anytime, no recording, no history.";
+      setupFootnote.textContent = 'Good lighting helps more than you think.';
+      cameraPreviewWrap.style.display = 'block';
+      startCameraPreview();
+    } else {
+      setupHeading.textContent = 'Find a signal.';
+      setupSubheading.textContent = "Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.";
+      setupFootnote.textContent = 'Be someone worth talking to.';
+      cameraPreviewWrap.style.display = 'none';
+      stopCameraPreview();
+    }
+  }
 
   // Arriving from the landing page's Text/Video card pre-selects the
   // matching choice here, so the choice made there actually sticks.
@@ -459,7 +509,7 @@
         modeRow.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
         target.classList.add('active');
         myMode = wantedMode;
-        videoHint.style.display = wantedMode === 'video' ? 'block' : 'none';
+        applyModeUI(wantedMode);
       }
     }
   })();
@@ -645,6 +695,7 @@
   }
 
   startBtn.addEventListener('click', ()=>{
+    stopCameraPreview();
     socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, mode: myMode, premiumToken: (getStoredPremium() || {}).token });
     showScreen('waiting');
     waitingText.textContent = 'Tuning in to a stranger...';
