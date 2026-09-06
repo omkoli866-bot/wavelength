@@ -417,6 +417,52 @@ a{color:inherit;}
   font-size:12.5px;
 }
 
+/* ===== Mode cards: Text Chat / Video Chat entry points ===== */
+.mode-cards{
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.mode-card{
+  width:220px;
+  background:linear-gradient(180deg, var(--panel), var(--panel-2));
+  border-radius:16px;
+  padding:24px 20px;
+  text-align:center;
+  text-decoration:none;
+  transition:transform .15s ease;
+}
+.mode-card:hover{ transform:translateY(-3px); }
+.mode-card-icon{
+  width:64px;
+  height:64px;
+  margin:0 auto 14px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.mode-card-text .mode-card-icon{ background:rgba(47,107,255,0.14); }
+.mode-card-video .mode-card-icon{ background:rgba(255,59,78,0.14); }
+.mode-card-title{
+  display:block;
+  color:var(--text);
+  font-weight:700;
+  font-size:16px;
+  margin-bottom:4px;
+}
+.mode-card-desc{
+  display:block;
+  color:var(--muted);
+  font-size:12.5px;
+}
+@media (max-width:600px){
+  .mode-cards{ flex-direction:column; align-items:center; }
+  .mode-card{ width:100%; max-width:280px; }
+}
+
 /* live-signal visual under hero */
 .signal-strip{
   max-width:640px;
