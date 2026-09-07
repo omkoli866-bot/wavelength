@@ -1392,6 +1392,14 @@ h1{
   justify-content:center;
 }
 .avatar-edit-btn:hover{ filter:brightness(1.1); }
+.choice-icon{
+  vertical-align:-3px;
+  margin-right:6px;
+}
+.mode-card-icon{
+  vertical-align:-4px;
+  margin-right:7px;
+}
 .avatar-edit-btn input[type="file"]{
   position:absolute;
   inset:0;
