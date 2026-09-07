@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Friends — Wavelength</title>
+<title>Your profile — Wavelength</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,26 +34,66 @@
     <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
   </div>
   <div class="links">
+    <a href="friends.html">Friends</a>
     <a href="guidelines.html">Guidelines</a>
-    <a href="privacy.html">Privacy</a>
     <a href="#" id="nav-logout">Log out</a>
     <a href="chat.html" class="cta">Start chatting</a>
   </div>
 </nav>
 
-<div class="doc" id="signed-out-notice" style="display:none;">
-  <h1>Sign in to see your contacts</h1>
-  <p>Friends and saved chat history are only available for registered accounts. <a href="login.html" style="color:var(--signal);">Sign in</a> or <a href="register.html" style="color:var(--signal);">create an account</a> — both are free.</p>
+<div class="app-wrap" id="signed-out-notice" style="display:none;">
+  <div class="app">
+    <div class="card" style="text-align:center;">
+      <h1>Sign in to see your profile</h1>
+      <p class="sub">Profiles, bios, and photos are only available for registered accounts. <a href="login.html" style="color:var(--signal);">Sign in</a> or <a href="register.html" style="color:var(--signal);">create an account</a> — both are free.</p>
+    </div>
+  </div>
 </div>
 
-<div class="doc" id="contacts-view">
-  <h1>Your friends</h1>
-  <p class="updated" id="loading-note">Loading...</p>
+<div class="app-wrap" id="profile-view">
+  <div class="app">
+    <div class="card">
+      <div class="avatar-edit-wrap">
+        <div class="avatar avatar-lg" id="avatar-preview">?</div>
+        <label class="avatar-edit-btn" title="Change photo">
+          ✎
+          <input type="file" id="avatar-input" accept="image/*" />
+        </label>
+      </div>
 
-  <div id="contacts-list"></div>
+      <div class="profile-meta">
+        <span id="member-since-line">Loading...</span>
+        <span id="friend-count-line" style="display:none;">· <b id="friend-count">0</b> friends</span>
+      </div>
 
-  <h2 style="margin-top:44px;">Past conversations</h2>
-  <div id="history-list"></div>
+      <p class="form-error" id="avatar-error"></p>
+      <div id="remove-photo-row" style="text-align:center; margin:-14px 0 22px; display:none;">
+        <a href="#" id="remove-photo-link" style="color:var(--muted); font-size:12.5px; text-decoration:underline;">Remove photo</a>
+      </div>
+
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="username" class="text-input" placeholder="Your username" autocomplete="username" />
+      </div>
+
+      <div class="field">
+        <label>Bio <span class="optional">optional</span></label>
+        <textarea id="bio" class="text-input" rows="3" maxlength="160" placeholder="A line or two about you..." style="resize:vertical; min-height:unset;"></textarea>
+        <p class="field-hint"><span id="bio-count">0</span>/160</p>
+      </div>
+
+      <div class="field">
+        <label>Age <span class="optional">optional</span></label>
+        <input type="number" id="age" class="text-input" placeholder="18-99" min="18" max="99" />
+      </div>
+
+      <p class="form-error" id="form-error"></p>
+      <p class="form-success" id="form-success"></p>
+
+      <button class="btn" id="save-btn">Save changes</button>
+      <p class="footnote"><a href="friends.html" style="color:var(--signal);">View your friends &amp; chat history →</a></p>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -65,7 +105,8 @@
     return token && username ? { token, username } : null;
   }
 
-  const auth = getAuth();
+  let auth = getAuth();
+
   document.getElementById('nav-logout').addEventListener('click', (e)=>{
     e.preventDefault();
     localStorage.removeItem('wl_auth_token');
@@ -74,16 +115,20 @@
   });
 
   if(!auth){
-    document.getElementById('signed-out-notice').style.display = 'block';
-    document.getElementById('contacts-view').style.display = 'none';
+    document.getElementById('signed-out-notice').style.display = 'flex';
+    document.getElementById('profile-view').style.display = 'none';
   } else {
-    loadFriends();
-    loadHistory();
+    loadProfile();
   }
 
-  async function authedFetch(path){
+  async function authedFetch(path, options = {}){
     const res = await fetch(`${API_BASE}${path}`, {
-      headers: { Authorization: `Bearer ${auth.token}` },
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${auth.token}`,
+        ...(options.headers || {}),
+      },
     });
     if(res.status === 401){
       localStorage.removeItem('wl_auth_token');
@@ -94,56 +139,161 @@
     return res.json();
   }
 
-  async function loadFriends(){
-    const data = await authedFetch('/api/contacts');
-    if(!data) return;
-    const list = document.getElementById('contacts-list');
-    document.getElementById('loading-note').style.display = 'none';
-    if(!data.contacts || !data.contacts.length){
-      list.innerHTML = '<p style="color:var(--muted);">No friends yet — add someone while chatting with them.</p>';
+  const avatarPreview = document.getElementById('avatar-preview');
+  const usernameInput = document.getElementById('username');
+  const bioInput = document.getElementById('bio');
+  const bioCount = document.getElementById('bio-count');
+  const ageInput = document.getElementById('age');
+  const saveBtn = document.getElementById('save-btn');
+  const formError = document.getElementById('form-error');
+  const formSuccess = document.getElementById('form-success');
+  const avatarError = document.getElementById('avatar-error');
+  const removePhotoRow = document.getElementById('remove-photo-row');
+
+  let currentAvatarData = '';
+  let pendingAvatarData = undefined; // undefined = no change; '' = remove
+
+  function renderAvatar(dataUrl, usernameForInitial){
+    if(dataUrl){
+      avatarPreview.innerHTML = `<img src="${dataUrl}" alt="Your avatar" />`;
+      removePhotoRow.style.display = 'block';
+    } else {
+      avatarPreview.textContent = (usernameForInitial || '?').charAt(0).toUpperCase();
+      removePhotoRow.style.display = 'none';
+    }
+  }
+
+  function updateBioCount(){
+    bioCount.textContent = bioInput.value.length;
+  }
+  bioInput.addEventListener('input', updateBioCount);
+
+  async function loadProfile(){
+    const data = await authedFetch('/api/auth/me');
+    if(!data || !data.loggedIn) return;
+    usernameInput.value = data.username || '';
+    bioInput.value = data.bio || '';
+    ageInput.value = data.age || '';
+    updateBioCount();
+    currentAvatarData = data.avatarData || '';
+    renderAvatar(currentAvatarData, data.username);
+
+    const since = data.memberSince ? new Date(data.memberSince).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : null;
+    document.getElementById('member-since-line').textContent = since ? `Member since ${since}` : '';
+    if(typeof data.friendCount === 'number'){
+      document.getElementById('friend-count').textContent = data.friendCount;
+      document.getElementById('friend-count-line').style.display = 'inline';
+    }
+  }
+
+  document.getElementById('avatar-input').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    e.target.value = '';
+    if(!file) return;
+    avatarError.textContent = '';
+    if(!file.type.startsWith('image/')){
+      avatarError.textContent = 'Please choose an image file.';
       return;
     }
-    list.innerHTML = '';
-    data.contacts.forEach(c=>{
-      const row = document.createElement('a');
-      row.className = 'contact-row';
-      row.href = `chat.html?with=${encodeURIComponent(c.username)}`;
-      row.innerHTML = `
-        <span class="contact-dot ${c.online ? 'online' : ''}"></span>
-        <span class="contact-name">${escapeHtml(c.username)}</span>
-        <span class="contact-status">${c.online ? 'Online — chat now' : 'Offline'}</span>
-      `;
-      list.appendChild(row);
+    try {
+      const resized = await resizeImageToDataUrl(file, 200, 0.82);
+      pendingAvatarData = resized;
+      renderAvatar(resized, usernameInput.value);
+    } catch (err) {
+      avatarError.textContent = 'Could not read that image — try a different one.';
+    }
+  });
+
+  document.getElementById('remove-photo-link').addEventListener('click', (e)=>{
+    e.preventDefault();
+    pendingAvatarData = '';
+    renderAvatar('', usernameInput.value);
+  });
+
+  // Resizes/compresses an image client-side so the resulting data URL
+  // comfortably fits the server's 60,000-character avatar limit, then
+  // steps quality down further if a very busy image still comes in large.
+  function resizeImageToDataUrl(file, maxDim, quality){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('read failed'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('decode failed'));
+        img.onload = () => {
+          let { width, height } = img;
+          if(width > height){
+            if(width > maxDim){ height = Math.round(height * (maxDim / width)); width = maxDim; }
+          } else {
+            if(height > maxDim){ width = Math.round(width * (maxDim / height)); height = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          let q = quality;
+          let dataUrl = canvas.toDataURL('image/jpeg', q);
+          while(dataUrl.length > 58000 && q > 0.3){
+            q -= 0.15;
+            dataUrl = canvas.toDataURL('image/jpeg', q);
+          }
+          if(dataUrl.length > 60000){
+            reject(new Error('too large'));
+            return;
+          }
+          resolve(dataUrl);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
     });
   }
 
-  async function loadHistory(){
-    const data = await authedFetch('/api/history');
-    if(!data) return;
-    const list = document.getElementById('history-list');
-    if(!data.conversations || !data.conversations.length){
-      list.innerHTML = '<p style="color:var(--muted);">No past conversations yet.</p>';
-      return;
-    }
-    list.innerHTML = '';
-    data.conversations.forEach(c=>{
-      const row = document.createElement('a');
-      row.className = 'contact-row';
-      row.href = `chat.html?with=${encodeURIComponent(c.otherUsername)}`;
-      const preview = c.lastMessageWasMine ? `You: ${c.lastMessagePreview}` : c.lastMessagePreview;
-      row.innerHTML = `
-        <span class="contact-name">${escapeHtml(c.otherUsername)}</span>
-        <span class="contact-status">${escapeHtml(preview || '')}</span>
-      `;
-      list.appendChild(row);
-    });
-  }
+  saveBtn.addEventListener('click', async ()=>{
+    formError.textContent = '';
+    formSuccess.textContent = '';
 
-  function escapeHtml(str){
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
+    const payload = {
+      username: usernameInput.value.trim(),
+      bio: bioInput.value,
+      age: ageInput.value ? ageInput.value : null,
+    };
+    if(pendingAvatarData === ''){
+      payload.removeAvatar = true;
+    } else if(pendingAvatarData){
+      payload.avatarData = pendingAvatarData;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    try {
+      const data = await authedFetch('/api/profile', {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+      if(!data) return;
+      if(!data.success){
+        formError.textContent = data.error || 'Could not save your changes.';
+        return;
+      }
+      if(data.token){
+        localStorage.setItem('wl_auth_token', data.token);
+        auth.token = data.token;
+      }
+      localStorage.setItem('wl_username', data.username);
+      currentAvatarData = data.avatarData || '';
+      pendingAvatarData = undefined;
+      renderAvatar(currentAvatarData, data.username);
+      formSuccess.textContent = 'Saved.';
+    } catch (err) {
+      formError.textContent = 'Something went wrong. Try again.';
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save changes';
+    }
+  });
 </script>
 </body>
 </html>
