@@ -55,23 +55,37 @@
   <p class="lead">Pick who you'd like to talk to, get matched instantly, and have a real conversation with a stranger. No profile, no history, no pressure.</p>
   <div class="mode-cards">
     <a href="chat.html?mode=text" class="mode-card mode-card-text">
-      <span class="mode-card-icon">
-        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
-          <path d="M6 10 h28 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 H16 l-7 6 v-6 H6 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z" fill="none" stroke="#2F6BFF" stroke-width="2"/>
-          <path d="M9 19 Q13 13 17 19 T25 19" fill="none" stroke="#2F6BFF" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </span>
+      <div class="mode-preview">
+        <div class="preview-chat-bubbles">
+          <div class="pb-row pb-them">
+            <span class="pb-avatar" style="background:linear-gradient(135deg,#49D6C4,#2F6BFF);"></span>
+            <span class="pb-bubble pb-b1">hey, where you from?</span>
+          </div>
+          <div class="pb-row pb-me">
+            <span class="pb-bubble pb-b2">London, you?</span>
+          </div>
+          <div class="pb-row pb-them">
+            <span class="pb-avatar" style="background:linear-gradient(135deg,#49D6C4,#2F6BFF);"></span>
+            <span class="pb-bubble pb-b3">no way, visiting soon!</span>
+          </div>
+          <div class="pb-row pb-them pb-typing-row">
+            <span class="pb-avatar" style="background:linear-gradient(135deg,#49D6C4,#2F6BFF);"></span>
+            <span class="pb-bubble pb-typing"><i></i><i></i><i></i></span>
+          </div>
+        </div>
+      </div>
       <span class="mode-card-title">Text Chat</span>
       <span class="mode-card-desc">Type it out, no camera needed</span>
     </a>
     <a href="chat.html?mode=video" class="mode-card mode-card-video">
-      <span class="mode-card-icon">
-        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
-          <rect x="4" y="10" width="22" height="20" rx="5" fill="none" stroke="#FF3B4E" stroke-width="2"/>
-          <path d="M26 17 L35 12 V28 L26 23 Z" fill="none" stroke="#FF3B4E" stroke-width="2" stroke-linejoin="round"/>
-          <circle cx="15" cy="20" r="4" fill="none" stroke="#FF3B4E" stroke-width="1.6"/>
-        </svg>
-      </span>
+      <div class="mode-preview mode-preview-video">
+        <span class="live-badge"><span class="live-dot"></span> Live</span>
+        <div class="pv-faces">
+          <span class="pv-face" style="background:linear-gradient(160deg,#FF3B4E,#FFC738);"></span>
+          <span class="pv-face" style="background:linear-gradient(160deg,#2F6BFF,#49D6C4);"></span>
+        </div>
+        <span class="pv-skip">Skip →</span>
+      </div>
       <span class="mode-card-title">Video Chat</span>
       <span class="mode-card-desc">Face to face, camera and mic</span>
     </a>
