@@ -626,6 +626,65 @@ a{color:inherit;}
   .signal-bars span{ animation:none; height:var(--amp); opacity:0.8; }
 }
 
+/* ===== Mode intro pages (text-chat.html / video-chat.html) ===== */
+.mode-intro{
+  max-width:1040px;
+  margin:0 auto;
+  padding:50px 24px 70px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:48px;
+  align-items:center;
+}
+@media (max-width:800px){
+  .mode-intro{ grid-template-columns:1fr; padding-top:24px; }
+}
+.mode-intro-icon{
+  width:64px;
+  height:64px;
+  border-radius:18px;
+  background:rgba(47,107,255,0.14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:18px;
+}
+.mode-intro-text h1{ margin-bottom:14px; }
+.mode-intro-desc{
+  color:var(--muted);
+  font-size:15px;
+  line-height:1.6;
+  margin-bottom:20px;
+}
+.mode-intro-points{
+  list-style:none;
+  padding:0;
+  margin:0 0 28px;
+}
+.mode-intro-points li{
+  color:var(--text);
+  font-size:13.5px;
+  padding:8px 0 8px 24px;
+  position:relative;
+  border-bottom:1px solid var(--line);
+}
+.mode-intro-points li:last-child{ border-bottom:none; }
+.mode-intro-points li::before{
+  content:"✓";
+  position:absolute;
+  left:0;
+  color:var(--signal);
+  font-weight:700;
+}
+.mode-intro-preview{
+  background:linear-gradient(180deg, var(--panel), var(--panel-2));
+  border-radius:16px;
+  padding:16px;
+}
+/* A stand-in for the illustrated avatar circles used in the previews,
+   ready to be swapped for a real face image later:
+   .pb-avatar-face, .pv-face { background-image: url('your-face.jpg'); background-size: cover; } */
+
 /* How it works */
 .section{
   max-width:1040px;
@@ -1392,38 +1451,6 @@ h1{
   justify-content:center;
 }
 .avatar-edit-btn:hover{ filter:brightness(1.1); }
-.choice-icon{
-  vertical-align:-3px;
-  margin-right:6px;
-}
-.mode-card-icon{
-  vertical-align:-4px;
-  margin-right:7px;
-}
-.avatar-edit-btn input[type="file"]{
-  position:absolute;
-  inset:0;
-  opacity:0;
-  cursor:pointer;
-}
-.avatar-lg{ width:88px; height:88px; font-size:28px; }
-.field-hint{
-  font-size:11.5px;
-  color:var(--muted);
-  text-align:right;
-  margin-top:6px;
-}
-.profile-meta{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:14px;
-  color:var(--muted);
-  font-size:13px;
-  margin:14px 0 26px;
-  text-align:center;
-}
-.profile-meta b{ color:var(--text); }
 
 /* ===== Auth forms (register/login) ===== */
 .text-input{
