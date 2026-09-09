@@ -707,7 +707,7 @@ a{color:inherit;}
 }
 .mode-intro-preview{
   background:linear-gradient(180deg, var(--panel), var(--panel-2));
-  border:1.5px solid var(--amber);
+  border:1px solid rgba(255,199,56,0.4);
   border-radius:16px;
   padding:16px;
 }
