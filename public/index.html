@@ -95,7 +95,6 @@
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
     <a href="login.html" id="nav-login">Sign in</a>
-    <!-- "Tune In Now" Nav CTA Button -->
     <a href="chat.html" class="signal-cta-btn nav-cta">
       <span class="btn-pulse-dot"></span>
       <span>Tune In Now</span>
@@ -111,29 +110,58 @@
   <h1>Somewhere out there,<br>someone's on the <span class="accent">same wavelength.</span></h1>
   <p class="lead">Pick who you'd like to talk to, get matched instantly, and have a real conversation with a stranger. No profile, no history, no pressure.</p>
 
-  <div class="mode-cards">
-    <a href="chat.html?mode=text" class="mode-card mode-card-text">
-      <span class="mode-card-icon">
-        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
-          <path d="M6 10 h28 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 H16 l-7 6 v-6 H6 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z" fill="none" stroke="#2F6BFF" stroke-width="2"/>
-          <path d="M9 19 Q13 13 17 19 T25 19" fill="none" stroke="#2F6BFF" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </span>
-      <span class="mode-card-title">Text Chat</span>
-      <span class="mode-card-desc">Type it out, no camera needed</span>
+  <!-- Interactive Animated Mode Cards with Embedded Feature Details -->
+  <div class="hero-mode-grid">
+    <a href="chat.html?mode=text" class="hero-feature-card text-card">
+      <div class="hfc-header">
+        <div class="hfc-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <span class="hfc-tag">P2P TEXT</span>
+      </div>
+      <div>
+        <div class="hfc-title">Text Chat</div>
+        <p class="hfc-desc">Low pressure, fast, and completely anonymous.</p>
+      </div>
+      <div class="hfc-features">
+        <div class="hfc-bullet"><span class="hfc-bullet-dot"></span><span>Zero logs or saved chats</span></div>
+        <div class="hfc-bullet"><span class="hfc-bullet-dot"></span><span>GIFs & custom reactions</span></div>
+        <div class="hfc-bullet"><span class="hfc-bullet-dot"></span><span>Filter by mutual interests</span></div>
+      </div>
+      <div class="hfc-action-btn">
+        <span>Start Texting</span>
+        <span>→</span>
+      </div>
     </a>
-    <a href="chat.html?mode=video" class="mode-card mode-card-video">
-      <span class="mode-card-icon">
-        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
-          <rect x="4" y="10" width="22" height="20" rx="5" fill="none" stroke="#FF3B4E" stroke-width="2"/>
-          <path d="M26 17 L35 12 V28 L26 23 Z" fill="none" stroke="#FF3B4E" stroke-width="2" stroke-linejoin="round"/>
-          <circle cx="15" cy="20" r="4" fill="none" stroke="#FF3B4E" stroke-width="1.6"/>
-        </svg>
-      </span>
-      <span class="mode-card-title">Video Chat</span>
-      <span class="mode-card-desc">Face to face, camera and mic</span>
+
+    <a href="chat.html?mode=video" class="hero-feature-card video-card">
+      <div class="hfc-header">
+        <div class="hfc-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="23 7 16 12 23 17 23 7"/>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+          </svg>
+        </div>
+        <span class="hfc-tag">LIVE WEBRTC</span>
+      </div>
+      <div>
+        <div class="hfc-title">Video Chat</div>
+        <p class="hfc-desc">Face-to-face conversations in real-time clarity.</p>
+      </div>
+      <div class="hfc-features">
+        <div class="hfc-bullet"><span class="hfc-bullet-dot"></span><span>Peer-to-peer WebRTC stream</span></div>
+        <div class="hfc-bullet"><span class="hfc-bullet-dot"></span><span>Instant camera self-check</span></div>
+        <div class="hfc-bullet"><span class="hfc-bullet-dot"></span><span>Quick mic & camera mute</span></div>
+      </div>
+      <div class="hfc-action-btn">
+        <span>Enter Video</span>
+        <span>→</span>
+      </div>
     </a>
   </div>
+
   <p class="fineprint">18+ only · No sign-up required · <a href="guidelines.html">Read the guidelines</a></p>
 
   <div class="activity-ticker"><span class="line" id="ticker-line"></span></div>
@@ -185,6 +213,29 @@
       <span class="num">03</span>
       <h3>Talk, skip, or leave</h3>
       <p>Chat as long as you like. Not feeling it? Skip to a new stranger in one tap.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Additional Description Cards Section -->
+<section class="section">
+  <div class="kicker">The Wavelength Protocol</div>
+  <h2>Engineered for pure connection.</h2>
+  <div class="desc-grid">
+    <div class="desc-card reveal">
+      <div class="desc-card-icon">⚡</div>
+      <h3>Zero-Trace Memory</h3>
+      <p>All chats live strictly in active memory. The moment you skip or close your tab, every message and session trace vanishes without writing a single byte to disk.</p>
+    </div>
+    <div class="desc-card reveal">
+      <div class="desc-card-icon">🎯</div>
+      <h3>Interest Tuning</h3>
+      <p>Select multiple interests to scan the airwaves for like-minded people. Our bi-directional matcher prioritizes strangers tuned to your specific wavelength.</p>
+    </div>
+    <div class="desc-card reveal">
+      <div class="desc-card-icon">🛡️</div>
+      <h3>Direct WebRTC Tunnels</h3>
+      <p>Video chats connect directly peer-to-peer between browsers. Video streams never touch or record to a central server, ensuring high frame rates and privacy.</p>
     </div>
   </div>
 </section>
