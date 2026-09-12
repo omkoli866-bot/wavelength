@@ -19,10 +19,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="has-siderail">
 <div class="stars-layer stars-small" aria-hidden="true"></div>
 <div class="stars-layer stars-medium" aria-hidden="true"></div>
 <div class="stars-layer stars-large" aria-hidden="true"></div>
+
+<nav class="side-rail" aria-label="Quick access">
+  <a href="profile.html" class="side-rail-link" title="Profile">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+  </a>
+  <a href="chat.html?open=recent" class="side-rail-link" title="Recent Chats">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+  </a>
+  <a href="friends.html" class="side-rail-link" title="Friends">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><circle cx="18" cy="9" r="2.4"/><path d="M15.5 14.2c2.6.4 4.5 2 4.5 4.3"/></svg>
+  </a>
+</nav>
 
 <nav class="site-nav">
   <a href="index.html" class="brand"><svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
@@ -49,11 +61,6 @@
 
 <header class="hero">
   <div class="hero-rings" aria-hidden="true"><span></span><span></span><span></span></div>
-
-  <div class="floating-faces" aria-hidden="true">
-    <span class="floating-face floating-face-1" style="background-image:url('face-male.jpg');"><span class="ff-dot"></span></span>
-    <span class="floating-face floating-face-2" style="background-image:url('face-female.jpg');"><span class="ff-dot"></span></span>
-  </div>
 
   <div class="eyebrow"><span class="pulse-dot"></span> <span id="eyebrow-text">strangers online now</span></div>
   <h1>Somewhere out there,<br>someone's on the <span class="accent">same wavelength.</span></h1>
@@ -159,34 +166,6 @@
         <h4>Skip anytime</h4>
         <p>You're never stuck. One click drops the chat and finds you someone new.</p>
       </div>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="kicker">What people use it for</div>
-  <h2>A few reasons people show up.</h2>
-  <div class="feature-people feature-people-3">
-    <div class="feature-person reveal">
-      <div class="person-avatar person-avatar-photo" style="background-image:url('face-male.jpg');"></div>
-      <h4>Meet someone real</h4>
-      <p>No feeds, no filters — an actual back-and-forth with a real stranger, anonymously, whenever you feel like it.</p>
-    </div>
-    <div class="feature-person reveal">
-      <div class="person-avatar person-avatar-photo" style="background-image:url('face-female.jpg');"></div>
-      <h4>Keep the good ones</h4>
-      <p>Hit it off with someone? Add them as a friend and find them again on the <a href="friends.html" style="color:var(--signal);">Friends</a> page — no more losing a great conversation to a random skip.</p>
-    </div>
-    <div class="feature-person reveal">
-      <div class="person-avatar" style="background:linear-gradient(135deg,#FFC738,#FF3B4E);">
-        <svg viewBox="0 0 40 40" width="26" height="26" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="20" cy="15" r="7"/>
-          <path d="M6 34 Q20 22 34 34"/>
-          <path d="M28 8 a5 5 0 0 1 0 10" opacity="0.7"/>
-        </svg>
-      </div>
-      <h4>Your profile, your rules</h4>
-      <p>Register free to set a photo, bio, and age, and pick up saved conversations right where you left off from your <a href="profile.html" style="color:var(--signal);">profile</a>.</p>
     </div>
   </div>
 </section>
