@@ -51,13 +51,8 @@
     transition: transform 0.12s ease;
     line-height: 1;
   }
-  .reaction-bar button:hover {
-    transform: scale(1.35);
-  }
-  .reaction-bar button.active {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
-  }
+  .reaction-bar button:hover { transform: scale(1.35); }
+  .reaction-bar button.active { background: rgba(255, 255, 255, 0.15); border-radius: 12px; }
 
   .wa-reaction-badge {
     display: none;
@@ -79,12 +74,7 @@
     line-height: 1;
     box-sizing: border-box;
   }
-  .wa-reaction-badge.multi {
-    border-radius: 12px;
-    width: auto;
-    padding: 0 6px;
-    gap: 2px;
-  }
+  .wa-reaction-badge.multi { border-radius: 12px; width: auto; padding: 0 6px; gap: 2px; }
   .msg.me .wa-reaction-badge { right: 8px; }
   .msg.them .wa-reaction-badge { left: 8px; }
   .wa-reaction-badge.show { display: inline-flex; }
@@ -118,11 +108,7 @@
     justify-content: space-between;
     align-items: center;
   }
-  .reaction-sheet-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+  .reaction-sheet-list { display: flex; flex-direction: column; gap: 10px; }
   .reaction-sheet-item {
     display: flex;
     align-items: center;
@@ -131,30 +117,92 @@
     background: rgba(255, 255, 255, 0.04);
     border-radius: 10px;
   }
-  .reaction-sheet-user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #e9edef;
-    font-size: 14px;
-  }
-  .reaction-sheet-remove {
-    background: transparent;
-    border: none;
-    color: #f15c6d;
-    font-size: 12px;
-    cursor: pointer;
-    padding: 4px 6px;
-  }
+  .reaction-sheet-user { display: flex; align-items: center; gap: 10px; color: #e9edef; font-size: 14px; }
+  .reaction-sheet-remove { background: transparent; border: none; color: #f15c6d; font-size: 12px; cursor: pointer; padding: 4px 6px; }
 
   .peer .name.registered-user {
     cursor: pointer;
     text-decoration: underline dotted;
     text-underline-offset: 3px;
   }
-  .peer .name.registered-user:hover {
-    color: var(--signal);
+  .peer .name.registered-user:hover { color: var(--signal); }
+
+  /* Mode-Specific Animated Description Box */
+  .mode-desc-showcase {
+    background: linear-gradient(135deg, rgba(47, 107, 255, 0.08), rgba(27, 35, 84, 0.6));
+    border: 1.5px solid var(--signal);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(47, 107, 255, 0.2);
+    animation: showcase-slide 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
+  .mode-desc-showcase.video-mode-theme {
+    background: linear-gradient(135deg, rgba(255, 59, 78, 0.08), rgba(27, 35, 84, 0.6));
+    border-color: var(--rose);
+    box-shadow: 0 8px 24px rgba(255, 59, 78, 0.2);
+  }
+  @keyframes showcase-slide {
+    0% { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .mds-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .mds-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .mds-tag {
+    font-size: 10.5px;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--signal);
+    color: #fff;
+    letter-spacing: 0.04em;
+  }
+  .video-mode-theme .mds-tag { background: var(--rose); }
+
+  .mds-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0 0 12px;
+  }
+  .mds-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .mds-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 11.5px;
+    color: var(--text);
+  }
+  .mds-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #49D6C4;
+    box-shadow: 0 0 6px #49D6C4;
+    flex: none;
+  }
+  .video-mode-theme .mds-dot { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
 </style>
 </head>
 <body>
@@ -247,12 +295,29 @@
     <h1 id="setup-heading">Find a signal.</h1>
     <p class="sub" id="setup-subheading">Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.</p>
 
-    <!-- Clean Choice Row for Chat Mode -->
+    <!-- Animated Mode Description Box (Updates dynamically on Text/Video selection) -->
+    <div class="mode-desc-showcase" id="mode-desc-showcase">
+      <div class="mds-header">
+        <div class="mds-title">
+          <span id="mds-icon">💬</span>
+          <span id="mds-title-text">Text Chat Protocol</span>
+        </div>
+        <span class="mds-tag" id="mds-tag">SECURE P2P</span>
+      </div>
+      <p class="mds-desc" id="mds-desc">Instant typed conversations routed securely through active memory. No disk traces, no accounts, complete anonymity.</p>
+      <div class="mds-features" id="mds-features">
+        <div class="mds-pill"><span class="mds-dot"></span><span>Real-time typing indicator</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>GIFs & sticker support</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>WhatsApp-style reactions</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>One-tap partner skipping</span></div>
+      </div>
+    </div>
+
     <div class="field" id="mode-field">
-      <label>Chat type</label>
+      <label>Choose Chat Type</label>
       <div class="choice-row" id="mode-row">
-        <div class="choice active" data-m="text">💬 Text chat</div>
-        <div class="choice" data-m="video">📹 Video chat</div>
+        <div class="choice active" data-m="text">💬 Text Chat</div>
+        <div class="choice" data-m="video">📹 Video Chat</div>
       </div>
       <p class="premium-hint" id="video-hint" style="display:none;">Video chat needs camera and mic access. You'll be asked to allow it once you start.</p>
     </div>
@@ -508,6 +573,14 @@
   const cameraPreviewLabel = document.getElementById('camera-preview-label');
   let previewStream = null;
 
+  // Mode Showcase DOM Elements
+  const modeDescShowcase = document.getElementById('mode-desc-showcase');
+  const mdsIcon = document.getElementById('mds-icon');
+  const mdsTitleText = document.getElementById('mds-title-text');
+  const mdsTag = document.getElementById('mds-tag');
+  const mdsDesc = document.getElementById('mds-desc');
+  const mdsFeatures = document.getElementById('mds-features');
+
   function setupChoiceRow(row, onPick){
     row.querySelectorAll('.choice').forEach(el=>{
       el.addEventListener('click', ()=>{
@@ -542,16 +615,45 @@
     videoHint.style.display = m === 'video' ? 'block' : 'none';
     setupCard.classList.toggle('mode-video', m === 'video');
 
+    // Trigger re-render of showcase animation
+    modeDescShowcase.classList.remove('video-mode-theme');
+    void modeDescShowcase.offsetWidth;
+
     if(m === 'video'){
       setupHeading.textContent = 'Get face to face.';
       setupSubheading.textContent = "Camera on, meet a real stranger live. Skip anytime, no recording, no history.";
       setupFootnote.textContent = 'Good lighting helps more than you think.';
+      
+      modeDescShowcase.classList.add('video-mode-theme');
+      mdsIcon.textContent = '📹';
+      mdsTitleText.textContent = 'Live WebRTC Video Protocol';
+      mdsTag.textContent = 'DIRECT P2P STREAM';
+      mdsDesc.textContent = 'High-definition browser video and audio streams tunnel directly peer-to-peer. Streams never touch or record to a central server.';
+      mdsFeatures.innerHTML = `
+        <div class="mds-pill"><span class="mds-dot"></span><span>Zero server stream storage</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>Live camera self-preview</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>One-tap mic & camera toggle</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>Instant partner switching</span></div>
+      `;
+
       cameraPreviewWrap.style.display = 'block';
       startCameraPreview();
     } else {
       setupHeading.textContent = 'Find a signal.';
       setupSubheading.textContent = "Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.";
       setupFootnote.textContent = 'Be someone worth talking to.';
+
+      mdsIcon.textContent = '💬';
+      mdsTitleText.textContent = 'Encrypted Text Chat Protocol';
+      mdsTag.textContent = 'SECURE MEMORY RAM';
+      mdsDesc.textContent = 'Instant typed conversations routed securely through active memory. No disk traces, no accounts, complete anonymity.';
+      mdsFeatures.innerHTML = `
+        <div class="mds-pill"><span class="mds-dot"></span><span>Real-time typing indicator</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>GIFs & sticker support</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>WhatsApp-style reactions</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>One-tap partner skipping</span></div>
+      `;
+
       cameraPreviewWrap.style.display = 'none';
       stopCameraPreview();
     }
