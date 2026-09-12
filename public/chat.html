@@ -19,7 +19,6 @@
     cursor: pointer;
   }
   
-  /* Floating emoji bar on hold */
   .reaction-bar {
     display: none;
     position: absolute;
@@ -60,7 +59,6 @@
     border-radius: 12px;
   }
 
-  /* WhatsApp-style circular badge on message */
   .wa-reaction-badge {
     display: none;
     position: absolute;
@@ -92,7 +90,6 @@
   .wa-reaction-badge.show { display: inline-flex; }
   .wa-reaction-badge:hover { transform: scale(1.1); }
 
-  /* WhatsApp-style Reaction Info Sheet */
   .reaction-modal-backdrop {
     display: none;
     position: fixed;
@@ -150,7 +147,6 @@
     padding: 4px 6px;
   }
 
-  /* Peer Name Interactive Styling */
   .peer .name.registered-user {
     cursor: pointer;
     text-decoration: underline dotted;
@@ -178,8 +174,58 @@
 <div class="stars-layer stars-medium" aria-hidden="true"></div>
 <div class="stars-layer stars-large" aria-hidden="true"></div>
 
+<!-- Slide-out Drawer Menu -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="side-drawer" aria-label="Slide Menu">
+  <div class="drawer-header">
+    <div class="drawer-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg>
+      Navigation
+    </div>
+    <button class="drawer-close" id="drawer-close-btn" aria-label="Close menu">✕</button>
+  </div>
+  <div class="drawer-links">
+    <a href="profile.html" class="drawer-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+      Profile
+    </a>
+    <a href="chat.html?open=recent" class="drawer-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+      Recent Chats
+    </a>
+    <a href="friends.html" class="drawer-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><circle cx="18" cy="9" r="2.4"/><path d="M15.5 14.2c2.6.4 4.5 2 4.5 4.3"/></svg>
+      Friends
+    </a>
+    <hr class="drawer-separator">
+    <a href="text-chat.html" class="drawer-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Text Chat
+    </a>
+    <a href="video-chat.html" class="drawer-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+      Video Chat
+    </a>
+    <hr class="drawer-separator">
+    <a href="guidelines.html" class="drawer-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Guidelines
+    </a>
+    <a href="privacy.html" class="drawer-link">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Privacy Policy
+    </a>
+  </div>
+</aside>
+
 <nav class="site-nav">
   <div class="nav-left">
+    <!-- 3-Bar Toggle Button -->
+    <button class="menu-btn" id="menu-toggle-btn" aria-label="Toggle navigation">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <a href="index.html" class="brand"><svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
       <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18">
         <animate attributeName="opacity" values="0.10;0.28;0.10" dur="2.4s" repeatCount="indefinite"/>
@@ -327,7 +373,6 @@
     </div>
     <div class="shared-interests" id="shared-interests-row"></div>
 
-    <!-- Video call area — hidden entirely for text-mode chats. -->
     <div class="video-call" id="video-call" style="display:none;">
       <video id="remote-video" autoplay playsinline></video>
       <video id="local-video" autoplay playsinline muted></video>
@@ -363,7 +408,6 @@
 </div>
 </div>
 
-<!-- WhatsApp Reaction Details Sheet -->
 <div class="reaction-modal-backdrop" id="reaction-modal">
   <div class="reaction-sheet">
     <div class="reaction-sheet-header">
@@ -374,7 +418,6 @@
   </div>
 </div>
 
-<!-- Profile Modal (Registered Users Only) -->
 <div class="modal-backdrop" id="profile-modal">
   <div class="modal-card">
     <div class="avatar" id="profile-modal-avatar" style="margin: 0 auto 12px; font-size: 28px; width: 64px; height: 64px; line-height: 64px;">?</div>
@@ -385,7 +428,6 @@
   </div>
 </div>
 
-<!-- Recent Chats Modal (For Everyone) -->
 <div class="modal-backdrop" id="recent-chats-modal">
   <div class="modal-card" style="max-height: 80vh; display: flex; flex-direction: column; text-align: left;">
     <h2>Recent Chats</h2>
@@ -402,9 +444,25 @@
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+  // ---- 3-Bar Drawer Toggle Logic ----
+  const menuBtn = document.getElementById('menu-toggle-btn');
+  const drawer = document.getElementById('side-drawer');
+  const drawerBackdrop = document.getElementById('drawer-backdrop');
+  const drawerCloseBtn = document.getElementById('drawer-close-btn');
+
+  function toggleDrawer(open) {
+    const isOpen = open !== undefined ? open : !drawer.classList.contains('open');
+    drawer.classList.toggle('open', isOpen);
+    drawerBackdrop.classList.toggle('show', isOpen);
+    menuBtn.classList.toggle('open', isOpen);
+  }
+
+  if (menuBtn) menuBtn.addEventListener('click', () => toggleDrawer());
+  if (drawerBackdrop) drawerBackdrop.addEventListener('click', () => toggleDrawer(false));
+  if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', () => toggleDrawer(false));
+
   const API_BASE = window.BACKEND_URL || '';
 
-  // ---- Auth ----
   function getAuth(){
     const token = localStorage.getItem('wl_auth_token');
     const username = localStorage.getItem('wl_username');
@@ -510,10 +568,6 @@
     }
   }
 
-  // Arriving from the landing page's Text/Video card locks in that choice
-  // here — the toggle itself is hidden, so there's no going back to the
-  // other mode without returning to the landing page. Each mode is meant
-  // to feel like its own distinct path, not two options on one screen.
   (function preselectModeFromQuery(){
     const params = new URLSearchParams(window.location.search);
     const wantedMode = params.get('mode');
@@ -649,7 +703,6 @@
   const app = document.getElementById('app');
   const waitingText = document.getElementById('waiting-text');
 
-  // ---- Radar scanner animation for the waiting screen ----
   const scannerBlips = document.getElementById('scanner-blips');
   const freqReadout = document.getElementById('freq-readout');
   const scanPhrase = document.getElementById('scan-phrase');
@@ -665,7 +718,6 @@
 
   function spawnBlip(){
     const angle = Math.random() * Math.PI * 2;
-    // Keep blips within the visible ring area, not dead center or off the edge.
     const radius = 30 + Math.random() * 50;
     const x = 84 + Math.cos(angle) * radius;
     const y = 84 + Math.sin(angle) * radius;
@@ -749,14 +801,12 @@
   function genId(){ return 'm' + Date.now() + Math.random().toString(36).slice(2,8); }
   const REACTION_EMOJIS = ['👍','❤️','😂','😮'];
 
-  // Global dismiss for open reaction bars
   document.addEventListener('click', (e)=>{
     if(!e.target.closest('.reaction-bar') && !e.target.closest('.msg')){
       document.querySelectorAll('.reaction-bar.visible').forEach(bar => bar.classList.remove('visible'));
     }
   });
 
-  // Reaction Details Sheet
   const reactionModal = document.getElementById('reaction-modal');
   const reactionSheetList = document.getElementById('reaction-sheet-list');
   document.getElementById('close-reaction-modal').addEventListener('click', ()=>{
@@ -861,7 +911,6 @@
       });
       div.appendChild(bar);
 
-      // WhatsApp Reaction Badge (circular for single emoji, pill for multiple)
       const badge = document.createElement('div');
       badge.className = 'wa-reaction-badge';
       badge.addEventListener('click', (e)=>{
@@ -870,7 +919,6 @@
       });
       div.appendChild(badge);
 
-      // --- Hold / Long-press trigger ---
       let pressTimer;
       const startHold = () => {
         pressTimer = setTimeout(()=>{
@@ -947,9 +995,6 @@
   let currentPartnerUsername = null;
   let currentPartnerInterests = [];
 
-  // ============================================================
-  // WebRTC video calling
-  // ============================================================
   const videoCallEl = document.getElementById('video-call');
   const remoteVideoEl = document.getElementById('remote-video');
   const localVideoEl = document.getElementById('local-video');
@@ -961,11 +1006,6 @@
   let localStream = null;
   let currentMode = 'text';
 
-  // Google's public STUN server — enough to establish a call on most
-  // home/mobile networks. For more reliable connections behind strict
-  // corporate or carrier NATs, add a TURN server here too (e.g. a free
-  // tier from Twilio, Xirsys, or a self-hosted coturn instance):
-  // { urls: 'turn:your-turn-server', username: '...', credential: '...' }
   const RTC_CONFIG = {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   };
@@ -1098,7 +1138,6 @@
       addMessage(partnerUsername ? `You're connected with ${partnerUsername}. Say hi.` : "You're connected with a stranger. Say hi.", 'sys');
     }
 
-    // Save initial session to Recent Chats
     saveRecentChat(partnerUsername || 'Anonymous Stranger', 'Connected');
 
     sharedInterestsRow.innerHTML = '';
@@ -1123,10 +1162,9 @@
     msgInput.focus();
   });
 
-  // Profile Modal logic for registered users
   const profileModal = document.getElementById('profile-modal');
   peerNameEl.addEventListener('click', ()=>{
-    if(!currentPartnerUsername) return; // Only for registered accounts
+    if(!currentPartnerUsername) return;
     document.getElementById('profile-modal-username').textContent = currentPartnerUsername;
     document.getElementById('profile-modal-avatar').textContent = peerAvatar.textContent;
     
@@ -1146,7 +1184,6 @@
     profileModal.classList.remove('show');
   });
 
-  // Recent Chats storage & modal logic
   function saveRecentChat(name, lastMessage){
     const history = JSON.parse(localStorage.getItem('wl_recent_chats') || '[]');
     const filtered = history.filter(item => item.name !== name);
@@ -1190,8 +1227,7 @@
   document.getElementById('recent-modal-close').addEventListener('click', ()=>{
     recentModal.classList.remove('show');
   });
-  // Arriving from the sidebar's Recent Chats shortcut (chat.html?open=recent)
-  // opens the modal automatically instead of requiring an extra click.
+
   if(new URLSearchParams(window.location.search).get('open') === 'recent'){
     openRecentChatsModal();
   }
@@ -1314,7 +1350,6 @@
     addMessage(t, 'sys', 'prompt');
   });
 
-  // ----- Sticker picker -----
   const STICKERS = ['😂','😍','🔥','👋','😎','🤯','💀','😭','👀','💯','🎉','😴','🤝','😏','👏','🙌','😅','🥲','😤','🫡','🤔','😈','💬','⚡'];
   const stickerPanel = document.getElementById('sticker-panel');
   STICKERS.forEach(emoji=>{
@@ -1344,7 +1379,6 @@
     if(gifPanel.classList.contains('show')) searchGifs('trending');
   });
 
-  // ----- GIF picker (GIPHY API) -----
   const gifGrid = document.getElementById('gif-grid');
   const gifSearch = document.getElementById('gif-search');
   let gifSearchTimeout;
