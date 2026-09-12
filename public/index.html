@@ -16,7 +16,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -44,7 +44,7 @@
       Recent Chats
     </a>
     <a href="friends.html" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><circle cx="18" cy="9" r="2.4"/><path d="M15.5 14.2c2.6.4 4.5 2 4.5 4.3"/></svg>
       Friends
     </a>
     <hr class="drawer-separator">
@@ -70,6 +70,7 @@
 
 <nav class="site-nav">
   <div class="nav-left">
+    <!-- 3-Bar Hamburger Button -->
     <button class="menu-btn" id="menu-toggle-btn" aria-label="Toggle navigation">
       <span></span>
       <span></span>
@@ -94,6 +95,7 @@
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
     <a href="login.html" id="nav-login">Sign in</a>
+    <!-- "Tune In Now" in place of the old red button -->
     <a href="chat.html" class="signal-cta-btn nav-cta">
       <span class="btn-pulse-dot"></span>
       <span>Tune In Now</span>
@@ -112,8 +114,9 @@
   <div class="mode-cards">
     <a href="chat.html?mode=text" class="mode-card mode-card-text">
       <span class="mode-card-icon">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M6 10 h28 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 H16 l-7 6 v-6 H6 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z" fill="none" stroke="#2F6BFF" stroke-width="2"/>
+          <path d="M9 19 Q13 13 17 19 T25 19" fill="none" stroke="#2F6BFF" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </span>
       <span class="mode-card-title">Text Chat</span>
@@ -121,16 +124,17 @@
     </a>
     <a href="chat.html?mode=video" class="mode-card mode-card-video">
       <span class="mode-card-icon">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2">
-          <polygon points="23 7 16 12 23 17 23 7"/>
-          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="4" y="10" width="22" height="20" rx="5" fill="none" stroke="#FF3B4E" stroke-width="2"/>
+          <path d="M26 17 L35 12 V28 L26 23 Z" fill="none" stroke="#FF3B4E" stroke-width="2" stroke-linejoin="round"/>
+          <circle cx="15" cy="20" r="4" fill="none" stroke="#FF3B4E" stroke-width="1.6"/>
         </svg>
       </span>
       <span class="mode-card-title">Video Chat</span>
       <span class="mode-card-desc">Face to face, camera and mic</span>
     </a>
   </div>
-  <p class="fineprint">18+ only · No sign-up required · <a href="guidelines.html">Read the guidelines</a></p>
+  <p class="fineprint">18+ only · No sign-up required · <a href="guidelines.html" style="color:inherit; text-decoration:underline;">Read the guidelines</a></p>
 
   <div class="activity-ticker"><span class="line" id="ticker-line"></span></div>
 
@@ -232,7 +236,7 @@
     const isOpen = open !== undefined ? open : !drawer.classList.contains('open');
     drawer.classList.toggle('open', isOpen);
     drawerBackdrop.classList.toggle('show', isOpen);
-    menuBtn.classList.toggle('open', isOpen);
+    if (menuBtn) menuBtn.classList.toggle('open', isOpen);
   }
 
   if (menuBtn) menuBtn.addEventListener('click', () => toggleDrawer());
