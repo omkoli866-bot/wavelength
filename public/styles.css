@@ -270,61 +270,44 @@ a{color:inherit;}
   100%{ transform:scale(1); opacity:0; }
 }
 
-/* Floating face avatars — gently bobbing near the headline, a hint of the
-   real people you could be matched with. */
-.floating-faces{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:0;
-}
-.floating-face{
-  position:absolute;
+/* Floating face avatars removed per feedback — keeping this comment as a
+   marker in case similar face-based hero decoration is wanted again later. */
+
+/* ===== Left side rail: quick access to Profile / Recent Chats / Friends ===== */
+.side-rail{
+  position:fixed;
+  top:0;
+  left:0;
+  bottom:0;
   width:64px;
-  height:64px;
-  border-radius:50%;
-  background-size:cover;
-  background-position:center;
-  border:2px solid rgba(255,255,255,0.15);
-  box-shadow:0 8px 24px rgba(0,0,0,0.35);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  background:rgba(11,15,46,0.55);
+  border-right:1px solid var(--line);
+  z-index:40;
 }
-.floating-face-1{
-  top:14%;
-  left:9%;
-  animation:float-bob-1 6s ease-in-out infinite;
+.side-rail-link{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--muted);
+  text-decoration:none;
+  transition:background .15s ease, color .15s ease;
 }
-.floating-face-2{
-  top:8%;
-  right:10%;
-  width:52px;
-  height:52px;
-  animation:float-bob-2 7s ease-in-out infinite;
+.side-rail-link:hover{
+  background:var(--signal-dim);
+  color:var(--signal);
 }
-@keyframes float-bob-1{
-  0%,100%{ transform:translateY(0) rotate(-2deg); }
-  50%{ transform:translateY(-14px) rotate(2deg); }
-}
-@keyframes float-bob-2{
-  0%,100%{ transform:translateY(0) rotate(2deg); }
-  50%{ transform:translateY(-10px) rotate(-2deg); }
-}
-.ff-dot{
-  position:absolute;
-  bottom:2px;
-  right:2px;
-  width:12px;
-  height:12px;
-  border-radius:50%;
-  background:var(--signal);
-  border:2px solid var(--ink);
-}
+body.has-siderail{ padding-left:64px; }
 @media (max-width:760px){
-  .floating-face{ width:44px; height:44px; }
-  .floating-face-1{ left:4%; top:8%; }
-  .floating-face-2{ width:38px; height:38px; right:5%; top:4%; }
-}
-@media (prefers-reduced-motion: reduce){
-  .floating-face{ animation:none; }
+  .side-rail{ display:none; }
+  body.has-siderail{ padding-left:0; }
 }
 
 .hero .eyebrow{
@@ -518,6 +501,38 @@ a{color:inherit;}
   position:relative;
   padding:14px 12px;
 }
+
+/* Simple floating word preview for the Text Chat intro page — no avatars,
+   just conversational snippets drifting upward and fading. */
+.floating-words-preview{ padding:0; }
+.fw{
+  position:absolute;
+  background:var(--panel-2);
+  border:1px solid var(--line);
+  color:var(--text);
+  font-size:13px;
+  font-weight:600;
+  padding:7px 14px;
+  border-radius:999px;
+  white-space:nowrap;
+  opacity:0;
+  animation:fw-float 6s ease-in infinite;
+}
+.fw-1{ left:12%; bottom:0; animation-delay:0s; }
+.fw-2{ left:55%; bottom:0; animation-delay:1s; background:var(--signal); color:#fff; border-color:transparent; }
+.fw-3{ left:30%; bottom:0; animation-delay:2s; }
+.fw-4{ left:65%; bottom:0; animation-delay:3s; background:var(--signal); color:#fff; border-color:transparent; }
+.fw-5{ left:10%; bottom:0; animation-delay:4s; }
+.fw-6{ left:48%; bottom:0; animation-delay:5s; background:var(--rose); color:#fff; border-color:transparent; }
+@keyframes fw-float{
+  0%{ opacity:0; transform:translateY(0) scale(0.9); }
+  10%{ opacity:1; transform:translateY(-20px) scale(1); }
+  80%{ opacity:1; transform:translateY(-150px) scale(1); }
+  100%{ opacity:0; transform:translateY(-190px) scale(0.95); }
+}
+@media (prefers-reduced-motion: reduce){
+  .fw{ animation:none; opacity:0.9; bottom:auto; top:50%; }
+}
 .preview-chat-bubbles{
   display:flex;
   flex-direction:column;
@@ -628,6 +643,19 @@ a{color:inherit;}
   background-color:#2F6BFF;
 }
 .pv-face-stranger::before, .pv-face-you::before{ display:none; }
+
+/* Simple "taking turns talking" animation for the Video Chat intro preview —
+   each face gently scales up while "speaking," alternating with the other. */
+.pv-talking{ animation:pv-talk-pulse 2.4s ease-in-out infinite; }
+.pv-talking-delay{ animation-delay:1.2s; }
+@keyframes pv-talk-pulse{
+  0%, 100%{ transform:scale(1); filter:brightness(1); }
+  25%{ transform:scale(1.035); filter:brightness(1.15); }
+  50%, 100%{ transform:scale(1); filter:brightness(1); }
+}
+@media (prefers-reduced-motion: reduce){
+  .pv-talking, .pv-talking-delay{ animation:none; }
+}
 .pv-name-tag{
   position:relative;
   z-index:2;
