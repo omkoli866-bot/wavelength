@@ -130,7 +130,7 @@ h1, h2, .brand, .step-card .num{
   letter-spacing:0.03em;
   -webkit-text-stroke: 0.3px rgba(0,0,0,0.35);
 }
-a{color:inherit;}
+a{color:inherit; text-decoration: none;}
 ::-webkit-scrollbar{width:6px;}
 ::-webkit-scrollbar-thumb{background:var(--line); border-radius:6px;}
 
@@ -443,6 +443,9 @@ a{color:inherit;}
   color:var(--muted);
   font-size:12.5px;
 }
+.hero .fineprint a{
+  text-decoration: underline;
+}
 
 /* ===== Mode cards ===== */
 .mode-cards{
@@ -565,7 +568,7 @@ a{color:inherit;}
   50%{ height:var(--amp); opacity:1; }
 }
 
-/* ===== Updated Modern Button Styling (No ugly comic outline/red box) ===== */
+/* ===== Modernized Button Theme (Sleek ambient glow) ===== */
 .btn{
   width:100%;
   padding:14px 20px;
@@ -607,7 +610,7 @@ a{color:inherit;}
   background:var(--signal-dim);
 }
 
-/* ===== "Tune In Now" Nav Button ===== */
+/* "Tune In Now" Nav CTA */
 .signal-cta-btn {
   display: inline-flex;
   align-items: center;
@@ -645,7 +648,7 @@ a{color:inherit;}
   100% { box-shadow: 0 0 0 0 rgba(73, 214, 196, 0); }
 }
 
-/* ===== Setup Card & Mode Picker Grid (Overflow Bugfix) ===== */
+/* ===== Setup Card & Choice Row Styling ===== */
 .app-wrap{
   display:flex;
   align-items:center;
@@ -800,6 +803,7 @@ h1{
   box-shadow: 0 4px 18px rgba(255, 59, 78, 0.4);
 }
 
+/* ===== GENDER SELECTION & RAINBOW / LGBTQ+ ANIMATION ===== */
 .choice-row{display:flex; gap:8px;}
 .choice{
   flex:1;
@@ -811,16 +815,85 @@ h1{
   cursor:pointer;
   font-size:14px;
   color:var(--text);
-  transition:border-color .15s ease, background .15s ease;
+  transition:all .15s ease;
   user-select:none;
+  position:relative;
 }
-.choice:hover{border-color:rgba(255,255,255,0.2);}
-.choice.active{
+.choice:hover{border-color:rgba(255,255,255,0.22);}
+
+/* Keyframe Pop for interactive selections */
+@keyframes choice-pop {
+  0% { transform: scale(0.93); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* Male: Electric Blue Wave Glow */
+.choice.active[data-g="male"]{
+  border-color:var(--signal);
+  background:var(--signal-dim);
+  color:#fff;
+  box-shadow: 0 0 16px rgba(47, 107, 255, 0.5), inset 0 0 8px rgba(47, 107, 255, 0.25);
+  animation: choice-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Female: Vibrant Rose Glow Pulse */
+.choice.active[data-g="female"]{
+  border-color:var(--rose);
+  background:rgba(255, 59, 78, 0.18);
+  color:#fff;
+  box-shadow: 0 0 16px rgba(255, 59, 78, 0.5), inset 0 0 8px rgba(255, 59, 78, 0.25);
+  animation: choice-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Other: Animated LGBTQ+ Rainbow Gradient & Flowing Aura */
+.choice[data-g="other"] {
+  position: relative;
+  z-index: 1;
+}
+.choice.active[data-g="other"] {
+  border-color: transparent !important;
+  color: #fff !important;
+  animation: choice-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 0 20px rgba(255, 94, 247, 0.45), 0 0 28px rgba(0, 242, 254, 0.35);
+}
+.choice.active[data-g="other"]::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  padding: 2px;
+  background: linear-gradient(90deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+  background-size: 300% 300%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rainbow-shift 3s linear infinite;
+  pointer-events: none;
+}
+.choice.active[data-g="other"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255,0,0,0.12), rgba(255,165,0,0.12), rgba(0,255,0,0.12), rgba(0,180,255,0.12), rgba(180,0,255,0.12));
+  background-size: 200% 200%;
+  animation: rainbow-shift 4s ease infinite;
+  z-index: -1;
+}
+
+@keyframes rainbow-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.choice.active[data-g="any"] {
   border-color:var(--signal);
   background:var(--signal-dim);
   color:#fff;
 }
-.choice.active[data-g="female"]{border-color:var(--rose); background:rgba(255,122,156,0.14);}
 
 .premium-badge{
   display:inline-block;
@@ -904,6 +977,9 @@ h1{
   font-size:12.5px;
   line-height:1.5;
   color:var(--muted);
+}
+.guidelines-box a{
+  text-decoration: underline;
 }
 .footnote{text-align:center; color:var(--muted); font-size:11.5px; margin-top:16px; letter-spacing:0.02em;}
 
@@ -1010,6 +1086,44 @@ h1{
 .freq-unit{ font-size:10px; color:var(--muted); letter-spacing:0.12em; margin-top:2px; }
 .scan-phrase{ font-size:11.5px; color:var(--muted); letter-spacing:0.08em; text-transform:lowercase; margin-top:4px; min-height:16px; opacity:0.8; }
 .status-text{color:var(--muted); font-size:14px; margin-bottom:22px;}
+
+/* Match Flash */
+.match-flash{
+  position:fixed;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:rgba(11,15,46,0.88);
+  z-index:50;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+}
+.match-flash.show{ opacity:1; }
+.flash-burst{
+  font-family:'Bangers', cursive;
+  font-size:56px;
+  color:var(--amber);
+  -webkit-text-stroke:1px var(--ink);
+  letter-spacing:0.04em;
+  animation:flash-pop .5s cubic-bezier(.2,1.6,.4,1);
+}
+@keyframes flash-pop{
+  0%{ transform:scale(0.4) rotate(-6deg); opacity:0; }
+  60%{ transform:scale(1.1) rotate(2deg); opacity:1; }
+  100%{ transform:scale(1) rotate(0); opacity:1; }
+}
+.flash-shared{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;
+  color:var(--text);
+  text-align:center;
+  max-width:380px;
+  padding:0 20px;
+}
 
 /* ===== Chat screen ===== */
 .chat-shell{display:none; height:74vh; height:74dvh; max-height:640px; flex-direction:column;}
