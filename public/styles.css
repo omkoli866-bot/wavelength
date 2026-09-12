@@ -270,6 +270,63 @@ a{color:inherit;}
   100%{ transform:scale(1); opacity:0; }
 }
 
+/* Floating face avatars — gently bobbing near the headline, a hint of the
+   real people you could be matched with. */
+.floating-faces{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+}
+.floating-face{
+  position:absolute;
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  background-size:cover;
+  background-position:center;
+  border:2px solid rgba(255,255,255,0.15);
+  box-shadow:0 8px 24px rgba(0,0,0,0.35);
+}
+.floating-face-1{
+  top:14%;
+  left:9%;
+  animation:float-bob-1 6s ease-in-out infinite;
+}
+.floating-face-2{
+  top:8%;
+  right:10%;
+  width:52px;
+  height:52px;
+  animation:float-bob-2 7s ease-in-out infinite;
+}
+@keyframes float-bob-1{
+  0%,100%{ transform:translateY(0) rotate(-2deg); }
+  50%{ transform:translateY(-14px) rotate(2deg); }
+}
+@keyframes float-bob-2{
+  0%,100%{ transform:translateY(0) rotate(2deg); }
+  50%{ transform:translateY(-10px) rotate(-2deg); }
+}
+.ff-dot{
+  position:absolute;
+  bottom:2px;
+  right:2px;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:var(--signal);
+  border:2px solid var(--ink);
+}
+@media (max-width:760px){
+  .floating-face{ width:44px; height:44px; }
+  .floating-face-1{ left:4%; top:8%; }
+  .floating-face-2{ width:38px; height:38px; right:5%; top:4%; }
+}
+@media (prefers-reduced-motion: reduce){
+  .floating-face{ animation:none; }
+}
+
 .hero .eyebrow{
   display:inline-flex;
   align-items:center;
@@ -938,8 +995,12 @@ a{color:inherit;}
   grid-template-columns:repeat(4, 1fr);
   gap:18px;
 }
+.feature-people-3{
+  grid-template-columns:repeat(3, 1fr);
+}
 @media (max-width:900px){
   .feature-people{ grid-template-columns:repeat(2, 1fr); }
+  .feature-people-3{ grid-template-columns:1fr; }
 }
 @media (max-width:600px){
   .feature-people{ grid-template-columns:1fr; }
@@ -958,6 +1019,19 @@ a{color:inherit;}
   display:flex;
   align-items:center;
   justify-content:center;
+}
+.person-avatar-photo{
+  background-size:cover;
+  background-position:center;
+  box-shadow:0 0 0 3px rgba(73,214,196,0.25);
+  animation:avatar-pulse-ring 3s ease-in-out infinite;
+}
+@keyframes avatar-pulse-ring{
+  0%,100%{ box-shadow:0 0 0 3px rgba(73,214,196,0.25); }
+  50%{ box-shadow:0 0 0 6px rgba(73,214,196,0.08); }
+}
+@media (prefers-reduced-motion: reduce){
+  .person-avatar-photo{ animation:none; }
 }
 .feature-person h4{
   font-size:14.5px;
