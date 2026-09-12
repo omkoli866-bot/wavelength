@@ -4,20 +4,167 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Video Chat — Wavelength</title>
-<meta name="description" content="Face-to-face anonymous video chat with a random stranger. Camera and mic, no account needed." />
+<meta name="description" content="Face-to-face random video chat with live WebRTC streams." />
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<style>
+  /* Mode-specific animated description showcase banner */
+  .mode-desc-showcase {
+    background: linear-gradient(135deg, rgba(255, 59, 78, 0.08), rgba(27, 35, 84, 0.6));
+    border: 1.5px solid var(--rose);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 22px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(255, 59, 78, 0.25);
+    animation: showcase-slide 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes showcase-slide {
+    0% { opacity: 0; transform: translateY(-10px) scale(0.97); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .mds-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .mds-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .mds-tag {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--rose);
+    color: #fff;
+    letter-spacing: 0.04em;
+    box-shadow: 0 0 10px rgba(255, 59, 78, 0.5);
+  }
+  .mds-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0 0 14px;
+  }
+  .mds-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .mds-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 9px;
+    padding: 7px 10px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .mds-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--amber);
+    flex: none;
+  }
+
+  /* WhatsApp-style Reaction System */
+  .msg { position: relative; user-select: none; -webkit-user-select: none; cursor: pointer; }
+  .reaction-bar {
+    display: none;
+    position: absolute;
+    top: -46px;
+    background: #232d36;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 4px 8px;
+    gap: 8px;
+    z-index: 50;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+  .msg.me .reaction-bar { right: 0; }
+  .msg.them .reaction-bar { left: 0; }
+  .reaction-bar.visible { display: flex; align-items: center; }
+  .reaction-bar button { background: transparent; border: none; font-size: 20px; cursor: pointer; padding: 2px 4px; border-radius: 50%; transition: transform 0.12s ease; line-height: 1; }
+  .reaction-bar button:hover { transform: scale(1.35); }
+
+  .wa-reaction-badge {
+    display: none;
+    position: absolute;
+    bottom: -10px;
+    background: #1f2c34;
+    border: 1px solid #111b21;
+    border-radius: 50%;
+    width: 24px; height: 24px;
+    padding: 0; font-size: 13px; color: #e9edef;
+    align-items: center; justify-content: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    cursor: pointer; z-index: 5; line-height: 1;
+  }
+  .wa-reaction-badge.multi { border-radius: 12px; width: auto; padding: 0 6px; gap: 2px; }
+  .msg.me .wa-reaction-badge { right: 8px; }
+  .msg.them .wa-reaction-badge { left: 8px; }
+  .wa-reaction-badge.show { display: inline-flex; }
+
+  .reaction-modal-backdrop {
+    display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55); z-index: 1000; align-items: flex-end; justify-content: center;
+  }
+  .reaction-modal-backdrop.show { display: flex; }
+  .reaction-sheet { background: #111b21; border-radius: 16px 16px 0 0; width: 100%; max-width: 420px; padding: 16px 20px 24px; border-top: 1px solid rgba(255,255,255,0.1); }
+  .reaction-sheet-header { font-weight: 600; font-size: 15px; color: #e9edef; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .reaction-sheet-list { display: flex; flex-direction: column; gap: 10px; }
+  .reaction-sheet-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: rgba(255,255,255,0.04); border-radius: 10px; }
+  .reaction-sheet-user { display: flex; align-items: center; gap: 10px; color: #e9edef; font-size: 14px; }
+  .reaction-sheet-remove { background: transparent; border: none; color: #f15c6d; font-size: 12px; cursor: pointer; padding: 4px 6px; }
+  .peer .name.registered-user { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+  .peer .name.registered-user:hover { color: var(--rose); }
+</style>
 </head>
 <body>
 <div class="stars-layer stars-small" aria-hidden="true"></div>
 <div class="stars-layer stars-medium" aria-hidden="true"></div>
 <div class="stars-layer stars-large" aria-hidden="true"></div>
 
+<!-- Slide-out Drawer Menu -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="side-drawer" aria-label="Slide Menu">
+  <div class="drawer-header">
+    <div class="drawer-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg>
+      Navigation
+    </div>
+    <button class="drawer-close" id="drawer-close-btn" aria-label="Close menu">✕</button>
+  </div>
+  <div class="drawer-links">
+    <a href="profile.html" class="drawer-link">Profile</a>
+    <a href="chat.html?open=recent" class="drawer-link">Recent Chats</a>
+    <a href="friends.html" class="drawer-link">Friends</a>
+    <hr class="drawer-separator">
+    <a href="text-chat.html" class="drawer-link">Text Chat</a>
+    <a href="video-chat.html" class="drawer-link" style="color:var(--rose);">Video Chat</a>
+    <hr class="drawer-separator">
+    <a href="guidelines.html" class="drawer-link">Guidelines</a>
+    <a href="privacy.html" class="drawer-link">Privacy Policy</a>
+  </div>
+</aside>
+
 <nav class="site-nav">
   <div class="nav-left">
+    <button class="menu-btn" id="menu-toggle-btn" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
     <a href="index.html" class="brand"><svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
       <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18">
         <animate attributeName="opacity" values="0.10;0.28;0.10" dur="2.4s" repeatCount="indefinite"/>
@@ -25,71 +172,368 @@
       <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="6 5">
         <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="1.1s" repeatCount="indefinite"/>
       </path>
-      <circle cx="10" cy="30" r="3" fill="#FF7A9C">
-        <animate attributeName="r" values="2.4;3.6;2.4" dur="1.6s" repeatCount="indefinite"/>
-      </circle>
-      <circle cx="52" cy="30" r="3" fill="#FF7A9C">
-        <animate attributeName="r" values="3.6;2.4;3.6" dur="1.6s" repeatCount="indefinite"/>
-      </circle>
+      <circle cx="10" cy="30" r="3" fill="#FF7A9C"><animate attributeName="r" values="2.4;3.6;2.4" dur="1.6s" repeatCount="indefinite"/></circle>
+      <circle cx="52" cy="30" r="3" fill="#FF7A9C"><animate attributeName="r" values="3.6;2.4;3.6" dur="1.6s" repeatCount="indefinite"/></circle>
     </svg> Wavelength</a>
     <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
   </div>
   <div class="links">
-    <a href="text-chat.html">Text Chat</a>
     <a href="guidelines.html">Guidelines</a>
+    <a href="privacy.html">Privacy</a>
     <a href="login.html" id="nav-login">Sign in</a>
+    <a href="video-chat.html" class="signal-cta-btn nav-cta" style="background: linear-gradient(135deg, var(--rose), #FF7A9C);">
+      <span class="btn-pulse-dot"></span>
+      <span>Tune In Now</span>
+      <span style="font-size: 15px; line-height: 1;">→</span>
+    </a>
   </div>
 </nav>
 
-<section class="mode-intro">
-  <div class="mode-intro-text">
-    <div class="mode-intro-icon" style="background:rgba(255,59,78,0.14);">
-      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
-        <rect x="4" y="10" width="22" height="20" rx="5" fill="none" stroke="#FF3B4E" stroke-width="2"/>
-        <path d="M26 17 L35 12 V28 L26 23 Z" fill="none" stroke="#FF3B4E" stroke-width="2" stroke-linejoin="round"/>
-        <circle cx="15" cy="20" r="4" fill="none" stroke="#FF3B4E" stroke-width="1.6"/>
-      </svg>
-    </div>
-    <h1>Video Chat</h1>
-    <p class="mode-intro-desc">Camera on, meet a real stranger live. You'll see a quick self-preview before you're connected, so you know what they'll see. Skip anytime, no recording, no history kept.</p>
-    <ul class="mode-intro-points">
-      <li>Real peer-to-peer video and audio, not recorded or stored</li>
-      <li>You'll be asked for camera/mic permission when you start</li>
-      <li>Text chat still works alongside the video call</li>
-      <li>Report and Leave are always one tap away</li>
-    </ul>
-    <a href="chat.html?mode=video" class="btn" style="display:inline-block; text-decoration:none; width:auto; padding:14px 32px; background:var(--rose);">Start Video Chat →</a>
-  </div>
+<div class="app-wrap">
+<div class="app wide" id="app">
 
-  <div class="mode-intro-preview">
-    <div class="mode-preview mode-preview-video" style="height:220px;">
-      <div class="pv-faces">
-        <span class="pv-face pv-face-stranger pv-talking"></span>
-        <span class="pv-face pv-face-you pv-talking pv-talking-delay"></span>
+  <!-- Screen 1: Video Chat Setup -->
+  <div class="card mode-video" id="screen-setup">
+    <h1>Get face to face.</h1>
+    <p class="sub">Camera on, meet a real stranger live. Skip anytime, no recording, no history.</p>
+
+    <!-- Animated Feature Description Banner -->
+    <div class="mode-desc-showcase">
+      <div class="mds-header">
+        <div class="mds-title">
+          <span>📹</span>
+          <span>Live WebRTC Video Protocol</span>
+        </div>
+        <span class="mds-tag">DIRECT P2P STREAM</span>
+      </div>
+      <p class="mds-desc">High-definition browser video and audio streams tunnel directly peer-to-peer. Streams never touch or record to a central server.</p>
+      <div class="mds-features">
+        <div class="mds-pill"><span class="mds-dot"></span><span>Zero server stream storage</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>Live camera self-preview</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>One-tap mic & camera toggle</span></div>
+        <div class="mds-pill"><span class="mds-dot"></span><span>Instant partner switching</span></div>
       </div>
     </div>
-  </div>
-</section>
 
-<footer class="site-footer">
-  <div class="fbrand">© 2026 Wavelength. Not affiliated with any other chat service.</div>
-  <div class="flinks">
-    <a href="guidelines.html">Guidelines</a>
-    <a href="privacy.html">Privacy</a>
-    <a href="text-chat.html">Text Chat</a>
+    <div class="camera-preview-wrap" id="camera-preview-wrap">
+      <video id="setup-camera-preview" autoplay muted playsinline></video>
+      <p class="camera-preview-label" id="camera-preview-label">Checking your camera...</p>
+    </div>
+
+    <div class="field">
+      <label>You are</label>
+      <div class="choice-row" id="gender-row">
+        <div class="choice" data-g="male">Male</div>
+        <div class="choice" data-g="female">Female</div>
+        <div class="choice" data-g="other">Other</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Talk to <span class="premium-badge">Premium</span></label>
+      <div class="choice-row locked" id="prefer-row">
+        <div class="choice locked-choice active" data-g="any">Anyone</div>
+        <div class="choice locked-choice" data-g="male">Male <span class="lock-ico">🔒</span></div>
+        <div class="choice locked-choice" data-g="female">Female <span class="lock-ico">🔒</span></div>
+      </div>
+      <p class="premium-hint">Free users are matched with anyone. Upgrade to pick who you talk to.</p>
+    </div>
+
+    <div class="field">
+      <label>Your interests <span class="optional">(optional — match with shared frequency)</span></label>
+      <div class="interest-row" id="interest-row">
+        <div class="interest-tag" data-i="music">🎧 Music</div>
+        <div class="interest-tag" data-i="gaming">🎮 Gaming</div>
+        <div class="interest-tag" data-i="movies">🎬 Movies</div>
+        <div class="interest-tag" data-i="sports">⚽ Sports</div>
+        <div class="interest-tag" data-i="art">🎨 Art</div>
+        <div class="interest-tag" data-i="books">📚 Books</div>
+        <div class="interest-tag" data-i="anime">🌀 Anime</div>
+        <div class="interest-tag" data-i="tech">💻 Tech</div>
+        <div class="interest-tag" data-i="travel">✈️ Travel</div>
+        <div class="interest-tag" data-i="food">🍜 Food</div>
+      </div>
+    </div>
+
+    <div class="guidelines-box">
+      <input type="checkbox" id="agree" />
+      <p>I'm 18 or older. I won't share personal info or harass anyone. Read the <a href="guidelines.html" style="color:var(--rose);">guidelines</a>.</p>
+    </div>
+
+    <button class="btn" id="start-btn" disabled style="background: linear-gradient(135deg, var(--rose), #E11D48);">Start video chatting</button>
+    <p class="footnote">Good lighting helps more than you think.</p>
   </div>
-</footer>
+
+  <!-- Screen 2: Waiting -->
+  <div class="card" id="screen-waiting" style="display:none;">
+    <div class="tuner">
+      <div class="scanner">
+        <div class="scanner-rings"><span></span><span></span><span></span></div>
+        <div class="scanner-sweep"></div>
+        <div class="scanner-blips" id="scanner-blips"></div>
+        <div class="scanner-core">
+          <span class="freq-readout mono" id="freq-readout">88.0</span>
+          <span class="freq-unit mono">MHz</span>
+        </div>
+      </div>
+      <div class="status-text" id="waiting-text">Connecting live video stream...</div>
+      <div class="scan-phrase mono" id="scan-phrase">establishing peer tunnel</div>
+    </div>
+    <button class="btn secondary" id="cancel-btn">Cancel</button>
+  </div>
+
+  <!-- Match flash -->
+  <div class="match-flash" id="match-flash">
+    <div class="flash-burst">SIGNAL LOCKED</div>
+    <div class="flash-shared" id="flash-shared"></div>
+  </div>
+
+  <!-- Screen 3: Video Chat Room -->
+  <div class="chat-shell" id="screen-chat">
+    <div class="chat-header">
+      <div class="peer">
+        <div class="avatar" id="peer-avatar">?</div>
+        <div class="meta">
+          <div class="name" id="peer-name">Stranger</div>
+          <div class="state" id="peer-state">connected</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="add-contact-btn" style="display:none;">+ Friend</button>
+        <button class="icon-btn" id="topic-btn">💡 Topic</button>
+        <button class="icon-btn" id="report-btn">Report</button>
+      </div>
+    </div>
+    <div class="shared-interests" id="shared-interests-row"></div>
+
+    <div class="video-call" id="video-call">
+      <video id="remote-video" autoplay playsinline></video>
+      <video id="local-video" autoplay playsinline muted></video>
+      <div class="video-status" id="video-status">Connecting camera...</div>
+      <div class="video-controls">
+        <button class="icon-btn" id="toggle-mic-btn" title="Mute/unmute">🎤</button>
+        <button class="icon-btn" id="toggle-cam-btn" title="Camera on/off">📹</button>
+      </div>
+    </div>
+
+    <div class="messages" id="messages"></div>
+    <div class="typing-row" id="typing-row"></div>
+
+    <div class="picker-panel" id="sticker-panel"></div>
+    <div class="picker-panel" id="gif-panel">
+      <input type="text" id="gif-search" class="mono" placeholder="Search GIFs..." />
+      <div class="gif-grid" id="gif-grid"></div>
+    </div>
+
+    <div class="bottom-actions">
+      <button class="icon-btn" id="skip-btn">⏭ Skip</button>
+      <button class="icon-btn danger-btn" id="leave-btn">✕ Leave</button>
+    </div>
+
+    <div class="composer">
+      <button class="icon-btn picker-toggle" id="sticker-toggle-btn" title="Stickers">😊</button>
+      <button class="icon-btn picker-toggle" id="gif-toggle-btn" title="GIFs">GIF</button>
+      <input type="text" id="msg-input" placeholder="Say something..." maxlength="1000" />
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div class="reaction-modal-backdrop" id="reaction-modal">
+  <div class="reaction-sheet">
+    <div class="reaction-sheet-header">
+      <span>Reactions</span>
+      <button style="background:none;border:none;color:#aaa;font-size:16px;cursor:pointer;" id="close-reaction-modal">✕</button>
+    </div>
+    <div class="reaction-sheet-list" id="reaction-sheet-list"></div>
+  </div>
+</div>
 
 <script>
-  (function(){
-    var token = localStorage.getItem('wl_auth_token');
-    var username = localStorage.getItem('wl_username');
-    var navLogin = document.getElementById('nav-login');
-    if(token && username && navLogin){
-      navLogin.textContent = username;
-      navLogin.href = 'profile.html';
+  window.BACKEND_URL = "";
+  window.GIPHY_KEY = "alCUd0QZuZMMBi49tgdmy8z05ADVSeea";
+</script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  const menuBtn = document.getElementById('menu-toggle-btn');
+  const drawer = document.getElementById('side-drawer');
+  const drawerBackdrop = document.getElementById('drawer-backdrop');
+  const drawerCloseBtn = document.getElementById('drawer-close-btn');
+
+  function toggleDrawer(open) {
+    const isOpen = open !== undefined ? open : !drawer.classList.contains('open');
+    drawer.classList.toggle('open', isOpen);
+    drawerBackdrop.classList.toggle('show', isOpen);
+    if (menuBtn) menuBtn.classList.toggle('open', isOpen);
+  }
+
+  if (menuBtn) menuBtn.addEventListener('click', () => toggleDrawer());
+  if (drawerBackdrop) drawerBackdrop.addEventListener('click', () => toggleDrawer(false));
+  if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', () => toggleDrawer(false));
+
+  const socket = io(window.BACKEND_URL || undefined, {
+    auth: (cb) => cb({ token: localStorage.getItem('wl_auth_token') }),
+  });
+
+  let myGender = null;
+  let myPrefer = 'any';
+  let myInterests = [];
+  const myMode = 'video';
+
+  const genderRow = document.getElementById('gender-row');
+  const preferRow = document.getElementById('prefer-row');
+  const interestRow = document.getElementById('interest-row');
+  const startBtn = document.getElementById('start-btn');
+  const agreeBox = document.getElementById('agree');
+
+  function setupChoiceRow(row, onPick){
+    row.querySelectorAll('.choice').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        row.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+        el.classList.add('active');
+        onPick(el.dataset.g);
+      });
+    });
+  }
+  setupChoiceRow(genderRow, g => { myGender = g; validate(); });
+
+  preferRow.querySelectorAll('.choice').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      preferRow.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
+      el.classList.add('active');
+      myPrefer = el.dataset.g;
+      validate();
+    });
+  });
+
+  agreeBox.addEventListener('change', validate);
+
+  interestRow.querySelectorAll('.interest-tag').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const i = el.dataset.i;
+      if(myInterests.includes(i)){
+        myInterests = myInterests.filter(x=>x!==i);
+        el.classList.remove('active');
+      } else {
+        myInterests.push(i);
+        el.classList.add('active');
+      }
+    });
+  });
+
+  function validate(){
+    startBtn.disabled = !(myGender && myPrefer && agreeBox.checked);
+  }
+
+  const setupCard = document.getElementById('screen-setup');
+  const screenWaiting = document.getElementById('screen-waiting');
+  const screenChat = document.getElementById('screen-chat');
+  const app = document.getElementById('app');
+  const waitingText = document.getElementById('waiting-text');
+  const cameraPreviewVideo = document.getElementById('setup-camera-preview');
+  const cameraPreviewLabel = document.getElementById('camera-preview-label');
+  let previewStream = null;
+
+  async function startCameraPreview(){
+    try {
+      previewStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      cameraPreviewVideo.srcObject = previewStream;
+      cameraPreviewLabel.textContent = "Camera ready.";
+    } catch (err) {
+      cameraPreviewLabel.textContent = "Camera access denied.";
     }
-  })();
+  }
+  startCameraPreview();
+
+  function showScreen(name){
+    setupCard.style.display = name === 'setup' ? 'block' : 'none';
+    screenWaiting.style.display = name === 'waiting' ? 'block' : 'none';
+    screenChat.classList.toggle('show', name === 'chat');
+    app.classList.toggle('wide', name === 'chat');
+  }
+
+  startBtn.addEventListener('click', ()=>{
+    if(previewStream) { previewStream.getTracks().forEach(t => t.stop()); }
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, mode: myMode });
+    showScreen('waiting');
+    waitingText.textContent = 'Connecting live video stream...';
+  });
+
+  document.getElementById('cancel-btn').addEventListener('click', ()=>{
+    socket.emit('leave');
+    showScreen('setup');
+    startCameraPreview();
+  });
+
+  const messagesEl = document.getElementById('messages');
+  const peerAvatar = document.getElementById('peer-avatar');
+  const peerState = document.getElementById('peer-state');
+  const peerNameEl = document.getElementById('peer-name');
+  const matchFlash = document.getElementById('match-flash');
+  const remoteVideoEl = document.getElementById('remote-video');
+  const localVideoEl = document.getElementById('local-video');
+  const videoStatusEl = document.getElementById('video-status');
+  let peerConnection = null;
+  let localStream = null;
+
+  socket.on('waiting', ()=>{
+    waitingText.textContent = 'No video partners online yet — searching...';
+  });
+
+  socket.on('matched', async ({ partnerGender, partnerUsername, isInitiator })=>{
+    showScreen('chat');
+    matchFlash.classList.add('show');
+    setTimeout(()=> matchFlash.classList.remove('show'), 1000);
+
+    peerAvatar.textContent = partnerGender === 'female' ? 'F' : 'M';
+    peerState.textContent = 'connected';
+    peerNameEl.textContent = partnerUsername || 'Stranger';
+
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localVideoEl.srcObject = localStream;
+      peerConnection = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+      peerConnection.ontrack = e => { remoteVideoEl.srcObject = e.streams[0]; videoStatusEl.textContent = ''; };
+      peerConnection.onicecandidate = e => { if(e.candidate) socket.emit('webrtc-signal', { type: 'ice-candidate', candidate: e.candidate }); };
+
+      if(isInitiator){
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        socket.emit('webrtc-signal', { type: 'offer', sdp: offer });
+      }
+    } catch(e) {
+      videoStatusEl.textContent = 'Camera/mic connection failed.';
+    }
+  });
+
+  socket.on('webrtc-signal', async p => {
+    if(!peerConnection) return;
+    if(p.type === 'offer'){
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(p.sdp));
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      socket.emit('webrtc-signal', { type: 'answer', sdp: answer });
+    } else if(p.type === 'answer'){
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(p.sdp));
+    } else if(p.type === 'ice-candidate' && p.candidate){
+      await peerConnection.addIceCandidate(new RTCIceCandidate(p.candidate));
+    }
+  });
+
+  document.getElementById('skip-btn').addEventListener('click', ()=>{
+    if(localStream) localStream.getTracks().forEach(t => t.stop());
+    if(peerConnection) peerConnection.close();
+    socket.emit('skip');
+  });
+  socket.on('ready-to-requeue', ()=>{
+    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, mode: myMode });
+    showScreen('waiting');
+    waitingText.textContent = 'Finding a new video partner...';
+  });
 </script>
 </body>
 </html>
