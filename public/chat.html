@@ -161,7 +161,19 @@
   }
 </style>
 </head>
-<body>
+<body class="has-siderail">
+<nav class="side-rail" aria-label="Quick access">
+  <a href="profile.html" class="side-rail-link" title="Profile">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+  </a>
+  <a href="chat.html?open=recent" class="side-rail-link" title="Recent Chats">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+  </a>
+  <a href="friends.html" class="side-rail-link" title="Friends">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><circle cx="18" cy="9" r="2.4"/><path d="M15.5 14.2c2.6.4 4.5 2 4.5 4.3"/></svg>
+  </a>
+</nav>
+
 <div class="stars-layer stars-small" aria-hidden="true"></div>
 <div class="stars-layer stars-medium" aria-hidden="true"></div>
 <div class="stars-layer stars-large" aria-hidden="true"></div>
@@ -205,8 +217,8 @@
     <div class="field" id="mode-field">
       <label>Chat type</label>
       <div class="choice-row" id="mode-row">
-        <div class="choice active" data-m="text"><svg class="choice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9l-4 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="8" cy="10.5" r="1.1" fill="currentColor"/><circle cx="12" cy="10.5" r="1.1" fill="currentColor"/><circle cx="16" cy="10.5" r="1.1" fill="currentColor"/></svg> Text chat</div>
-        <div class="choice" data-m="video"><svg class="choice-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 10.5 21.2 7.3a1 1 0 0 1 1.5.86v7.68a1 1 0 0 1-1.5.86L16 13.5" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg> Video chat</div>
+        <div class="choice active" data-m="text">💬 Text chat</div>
+        <div class="choice" data-m="video">📹 Video chat</div>
       </div>
       <p class="premium-hint" id="video-hint" style="display:none;">Video chat needs camera and mic access. You'll be asked to allow it once you start.</p>
     </div>
@@ -1148,8 +1160,7 @@
 
   const recentModal = document.getElementById('recent-chats-modal');
   const recentChatsList = document.getElementById('recent-chats-list');
-  document.getElementById('nav-recent-chats').addEventListener('click', (e)=>{
-    e.preventDefault();
+  function openRecentChatsModal(){
     const history = JSON.parse(localStorage.getItem('wl_recent_chats') || '[]');
     recentChatsList.innerHTML = '';
     if(!history.length){
@@ -1171,10 +1182,19 @@
       });
     }
     recentModal.classList.add('show');
+  }
+  document.getElementById('nav-recent-chats').addEventListener('click', (e)=>{
+    e.preventDefault();
+    openRecentChatsModal();
   });
   document.getElementById('recent-modal-close').addEventListener('click', ()=>{
     recentModal.classList.remove('show');
   });
+  // Arriving from the sidebar's Recent Chats shortcut (chat.html?open=recent)
+  // opens the modal automatically instead of requiring an extra click.
+  if(new URLSearchParams(window.location.search).get('open') === 'recent'){
+    openRecentChatsModal();
+  }
 
   addContactBtn.addEventListener('click', ()=>{
     addContactBtn.disabled = true;
