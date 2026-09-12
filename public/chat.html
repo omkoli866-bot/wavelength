@@ -247,35 +247,6 @@
     <h1 id="setup-heading">Find a signal.</h1>
     <p class="sub" id="setup-subheading">Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.</p>
 
-    <!-- NEW: Animated Dynamic Mode Feature Banner -->
-    <div class="mode-feature-banner" id="mode-feature-banner">
-      <div class="mode-feature-header">
-        <div class="mode-feature-title">
-          <span class="mode-feature-icon" id="mode-feature-icon">💬</span>
-          <span id="mode-feature-heading">Text Chat Protocol</span>
-        </div>
-        <span class="mode-feature-badge" id="mode-feature-badge">Zero Storage</span>
-      </div>
-      <div class="mode-feature-grid" id="mode-feature-grid">
-        <div class="mode-feature-item">
-          <span class="mode-feature-check">✓</span>
-          <span id="mf-item-1">Anonymous alias</span>
-        </div>
-        <div class="mode-feature-item">
-          <span class="mode-feature-check">✓</span>
-          <span id="mf-item-2">Disappearing logs</span>
-        </div>
-        <div class="mode-feature-item">
-          <span class="mode-feature-check">✓</span>
-          <span id="mf-item-3">GIFs & stickers</span>
-        </div>
-        <div class="mode-feature-item">
-          <span class="mode-feature-check">✓</span>
-          <span id="mf-item-4">Instant skip</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Chat Type Grid -->
     <div class="field" id="mode-field">
       <label>Choose Chat Type</label>
@@ -561,16 +532,6 @@
   const cameraPreviewLabel = document.getElementById('camera-preview-label');
   let previewStream = null;
 
-  // Mode Feature Banner DOM Elements
-  const modeFeatureBanner = document.getElementById('mode-feature-banner');
-  const modeFeatureIcon = document.getElementById('mode-feature-icon');
-  const modeFeatureHeading = document.getElementById('mode-feature-heading');
-  const modeFeatureBadge = document.getElementById('mode-feature-badge');
-  const mfItem1 = document.getElementById('mf-item-1');
-  const mfItem2 = document.getElementById('mf-item-2');
-  const mfItem3 = document.getElementById('mf-item-3');
-  const mfItem4 = document.getElementById('mf-item-4');
-
   function setupChoiceRow(row, onPick){
     const selector = row.id === 'mode-row' ? '.mode-picker-card' : '.choice';
     row.querySelectorAll(selector).forEach(el=>{
@@ -606,39 +567,16 @@
     videoHint.style.display = m === 'video' ? 'block' : 'none';
     setupCard.classList.toggle('mode-video', m === 'video');
 
-    // Trigger re-render of dynamic feature animation
-    modeFeatureBanner.classList.remove('video-theme');
-    void modeFeatureBanner.offsetWidth; // reset CSS animation
-
     if(m === 'video'){
       setupHeading.textContent = 'Get face to face.';
       setupSubheading.textContent = "Camera on, meet a real stranger live. Skip anytime, no recording, no history.";
       setupFootnote.textContent = 'Good lighting helps more than you think.';
-      
-      modeFeatureBanner.classList.add('video-theme');
-      modeFeatureIcon.textContent = '📹';
-      modeFeatureHeading.textContent = 'Direct WebRTC Video';
-      modeFeatureBadge.textContent = 'Encrypted P2P';
-      mfItem1.textContent = 'Live camera stream';
-      mfItem2.textContent = 'No recording stored';
-      mfItem3.textContent = 'Mic & cam toggles';
-      mfItem4.textContent = 'Skip partner anytime';
-
       cameraPreviewWrap.style.display = 'block';
       startCameraPreview();
     } else {
       setupHeading.textContent = 'Find a signal.';
       setupSubheading.textContent = "Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.";
       setupFootnote.textContent = 'Be someone worth talking to.';
-
-      modeFeatureIcon.textContent = '💬';
-      modeFeatureHeading.textContent = 'Text Chat Protocol';
-      modeFeatureBadge.textContent = 'Zero Storage';
-      mfItem1.textContent = 'Anonymous alias';
-      mfItem2.textContent = 'Disappearing logs';
-      mfItem3.textContent = 'GIFs & stickers';
-      mfItem4.textContent = 'Instant skip';
-
       cameraPreviewWrap.style.display = 'none';
       stopCameraPreview();
     }
