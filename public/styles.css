@@ -475,6 +475,11 @@ a{color:inherit;}
   flex:none;
   box-shadow:0 0 0 2px rgba(255,255,255,0.08);
 }
+.pb-avatar-face{
+  background-image:url('face-male.jpg'), linear-gradient(135deg,#49D6C4,#2F6BFF);
+  background-size:cover;
+  background-position:center;
+}
 .pb-bubble{
   font-size:12.5px;
   padding:8px 12px;
@@ -539,8 +544,12 @@ a{color:inherit;}
   display:flex;
   align-items:flex-end;
   justify-content:center;
+  background-size:cover;
+  background-position:center;
 }
 .pv-face:nth-child(2){ animation-delay:.6s; }
+/* Illustrated silhouette fallback — only shows when there's no real photo
+   background behind it (see .pv-face-stranger / .pv-face-you below). */
 .pv-face::before{
   content:"";
   position:absolute;
@@ -553,6 +562,15 @@ a{color:inherit;}
     radial-gradient(circle at 50% 32%, rgba(255,255,255,0.92) 0 15%, transparent 16%),
     radial-gradient(ellipse at 50% 78%, rgba(255,255,255,0.92) 0 42%, transparent 43%);
 }
+.pv-face-stranger{
+  background-image:url('face-male.jpg');
+  background-color:#FF3B4E;
+}
+.pv-face-you{
+  background-image:url('face-female.jpg');
+  background-color:#2F6BFF;
+}
+.pv-face-stranger::before, .pv-face-you::before{ display:none; }
 .pv-name-tag{
   position:relative;
   z-index:2;
