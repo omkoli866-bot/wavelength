@@ -87,7 +87,7 @@ body::after{
   opacity:0.75;
 }
 .stars-large{
-  box-shadow:1309px 228px #fff, 51px 1518px #fff, 563px 501px #fff, 457px 285px #fff, 1508px 209px #fff, 1385px 1516px #fff, 1827px 1116px #fff, 178px 1209px #fff, 864px 65px #fff, 61px 191px #fff, 447px 476px #fff, 1034px 1232px #fff, 54px 1149px #fff, 407px 1466px #fff, 1330px 1436px #fff, 1116px 859px #fff, 451px 919px #fff, 1206px 569px #fff, 1657px 1780px #fff, 13px 1554px #fff, 1650px 326px #fff, 1429px 865px #fff, 696px 569px #fff, 318px 440px #fff, 1960px 1563px #fff, 689px 209px #fff, 189px 778px #fff, 198px 735px #fff, 1735px 704px #fff, 1236px 541px #fff, 1652px 88px #fff, 1494px 940px #fff, 1098px 255px #fff, 1992px 1888px #fff, 775px 161px #fff, 1130px 600px #fff, 1698px 1287px #fff, 1266px 1813px #fff, 1764px 740px #fff, 1182px 393px #fff;
+  box-shadow:1309px 228px #fff, 51px 1518px #fff, 563px 501px #fff, 457px 285px #fff, 1508px 209px #fff, 1385px 1516px #fff, 1827px 1116px #fff, 178px 1209px #fff, 864px 65px #fff, 61px 191px #fff, 447px 476px #fff, 1034px 1232px #fff, 54px 1149px #fff, 407px 1466px #fff, 1330px 1436px #fff, 1116px 859px #fff, 451px 919px #fff, 1206px 569px #fff, 1657px 1780px #fff, 13px 1554px #fff, 1650px 326px #fff, 1429px 865px #fff, 696px 569px #fff, 318px 440px #fff, 1960px 1563px #fff, 689px 209px #fff, 189px 778px #fff, 198px 735px #fff, 1735px 704px #fff, 1236px 541px #fff, 1652px 88px #fff, 1494px 940px #fff, 1098px 255px #fff, 1992px 1888px #fff, 775px 161px #fff, 1130px 600px #fff, 1698px 1287px #fff, 1266px 1813px #fff, 1764px 740px #fff, 1182px 393px #fff, 1442px 142px #fff, 93px 1354px #fff, 466px 1583px #fff, 592px 163px #fff, 1751px 476px #fff, 1774px 206px #fff, 778px 569px #fff, 928px 1301px #fff, 1708px 747px #fff, 333px 758px #fff, 727px 429px #fff, 1372px 546px #fff, 1437px 1918px #fff, 1399px 1327px #fff, 146px 1247px #fff, 1300px 350px #fff, 1093px 1493px #fff, 501px 334px #fff, 946px 777px #fff, 552px 1895px #fff, 1310px 1409px #fff, 1140px 449px #fff, 1402px 664px #fff, 1726px 1573px #fff, 1589px 114px #fff, 469px 1683px #fff, 65px 1648px #fff, 646px 821px #fff, 548px 135px #fff, 432px 1870px #fff, 1931px 1161px #fff, 1794px 1470px #fff, 644px 435px #fff, 1342px 1022px #fff, 810px 1811px #fff, 1872px 1316px #fff, 939px 292px #fff, 542px 285px #fff, 505px 1525px #fff, 1149px 1103px #fff, 538px 1529px #fff, 1197px 877px #fff, 1838px 1195px #fff, 817px 741px #fff, 449px 283px #fff, 1043px 1010px #fff, 186px 1547px #fff, 96px 1763px #fff, 224px 313px #fff, 1285px 327px #fff;
   animation:stars-drift 200s linear infinite, stars-twinkle 3.2s ease-in-out infinite;
   animation-delay:0s, 2.1s;
   opacity:0.9;
@@ -348,33 +348,43 @@ a{color:inherit;}
   color: #fff;
 }
 
-/* ===== Hero Pulsing Button ===== */
+/* ===== "Tune In Now" Gradient Button ===== */
 .signal-cta-btn {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: linear-gradient(135deg, var(--signal), var(--rose));
   color: #fff;
   font-family: 'Poppins', sans-serif;
   font-weight: 700;
-  font-size: 16px;
-  padding: 14px 32px;
+  font-size: 15px;
+  padding: 12px 26px;
   border-radius: 999px;
   border: 1.5px solid var(--ink);
-  box-shadow: 0 4px 20px rgba(47, 107, 255, 0.4), 2px 2px 0 var(--ink);
+  box-shadow: 0 4px 18px rgba(47, 107, 255, 0.4), 2px 2px 0 var(--ink);
   cursor: pointer;
   text-decoration: none;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   position: relative;
+  white-space: nowrap;
 }
 .signal-cta-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 28px rgba(255, 59, 78, 0.5), 3px 3px 0 var(--ink);
+  box-shadow: 0 6px 24px rgba(255, 59, 78, 0.5), 3px 3px 0 var(--ink);
 }
 .signal-cta-btn:active {
   transform: translateY(1px);
   box-shadow: 0 2px 10px rgba(47, 107, 255, 0.3), 1px 1px 0 var(--ink);
 }
+
+/* Specific sizing when placed in the top navbar */
+.signal-cta-btn.nav-cta {
+  padding: 8px 16px;
+  font-size: 13.5px;
+  gap: 8px;
+  box-shadow: 0 3px 14px rgba(47, 107, 255, 0.35), 1.5px 1.5px 0 var(--ink);
+}
+
 .btn-pulse-dot {
   width: 8px;
   height: 8px;
@@ -382,6 +392,7 @@ a{color:inherit;}
   border-radius: 50%;
   box-shadow: 0 0 0 0 rgba(73, 214, 196, 0.7);
   animation: btn-radar 1.8s infinite;
+  flex: none;
 }
 @keyframes btn-radar {
   0% { box-shadow: 0 0 0 0 rgba(73, 214, 196, 0.7); }
@@ -420,25 +431,15 @@ a{color:inherit;}
 .site-nav .links{
   display:flex;
   align-items:center;
-  gap:22px;
+  gap:20px;
 }
-.site-nav .links a{
+.site-nav .links a:not(.signal-cta-btn){
   text-decoration:none;
   color:var(--muted);
   font-size:14px;
   transition:color .15s ease;
 }
-.site-nav .links a:hover{color:var(--text);}
-.site-nav .links a.cta{
-  color:#fff;
-  background:var(--rose);
-  padding:9px 16px;
-  border-radius:9px;
-  font-weight:700;
-  border:1.5px solid var(--ink);
-  box-shadow:2px 2px 0 var(--signal);
-}
-.site-nav .links a.cta:hover{filter:none; transform:translate(-1px,-1px); box-shadow:2px 2px 0 var(--signal); color:#fff;}
+.site-nav .links a:not(.signal-cta-btn):hover{color:var(--text);}
 .back-btn{
   background:transparent;
   border:none;
@@ -605,17 +606,6 @@ a{color:inherit;}
   margin:0 auto 32px;
   line-height:1.6;
 }
-.hero .actions{
-  display:flex;
-  gap:12px;
-  justify-content:center;
-  flex-wrap:wrap;
-  margin-bottom:24px;
-}
-.hero .fineprint{
-  color:var(--muted);
-  font-size:12.5px;
-}
 
 /* ===== Mode cards ===== */
 .mode-cards{
@@ -726,7 +716,7 @@ a{color:inherit;}
 @media (max-width:760px){
   .steps{grid-template-columns:1fr;}
   .site-nav .links{gap:12px;}
-  .site-nav .links a:not(.cta){display:none;}
+  .site-nav .links a:not(.signal-cta-btn){display:none;}
 }
 
 /* ===== Mobile phone layout ===== */
@@ -739,7 +729,7 @@ a{color:inherit;}
   .back-btn{ font-size:13px; }
   .nav-left{ gap:10px; }
   .site-nav .links{ gap:8px; }
-  .site-nav .links a.cta{ padding:8px 12px; font-size:13px; }
+  .site-nav .links .signal-cta-btn.nav-cta{ padding:7px 12px; font-size:12px; }
   .site-nav .links a#nav-login,
   .site-nav .links a#nav-friends{ display:inline; font-size:13px; }
 
