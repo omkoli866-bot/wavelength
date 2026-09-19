@@ -3,14 +3,26 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Your profile — Wavelength</title>
+<title>Profile — Wavelength</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="has-siderail">
+<nav class="side-rail" aria-label="Quick access">
+  <a href="profile.html" class="side-rail-link" title="Profile">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+  </a>
+  <a href="chat.html?open=recent" class="side-rail-link" title="Recent Chats">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+  </a>
+  <a href="friends.html" class="side-rail-link" title="Friends">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><circle cx="18" cy="9" r="2.4"/><path d="M15.5 14.2c2.6.4 4.5 2 4.5 4.3"/></svg>
+  </a>
+</nav>
+
 <div class="stars-layer stars-small" aria-hidden="true"></div>
 <div class="stars-layer stars-medium" aria-hidden="true"></div>
 <div class="stars-layer stars-large" aria-hidden="true"></div>
@@ -34,70 +46,58 @@
     <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
   </div>
   <div class="links">
-    <a href="friends.html">Friends</a>
     <a href="guidelines.html">Guidelines</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="friends.html">Friends</a>
     <a href="#" id="nav-logout">Log out</a>
     <a href="chat.html" class="cta">Start chatting</a>
   </div>
 </nav>
 
-<div class="app-wrap" id="signed-out-notice" style="display:none;">
-  <div class="app">
-    <div class="card" style="text-align:center;">
-      <h1>Sign in to see your profile</h1>
-      <p class="sub">Profiles, bios, and photos are only available for registered accounts. <a href="login.html" style="color:var(--signal);">Sign in</a> or <a href="register.html" style="color:var(--signal);">create an account</a> — both are free.</p>
-    </div>
-  </div>
-</div>
-
-<div class="app-wrap" id="profile-view">
-  <div class="app">
+<div class="app-wrap">
+  <div class="app" style="max-width:480px;">
     <div class="card">
       <div class="avatar-edit-wrap">
-        <div class="avatar avatar-lg" id="avatar-preview">?</div>
-        <label class="avatar-edit-btn" title="Change photo">
-          ✎
-          <input type="file" id="avatar-input" accept="image/*" />
-        </label>
+        <div class="avatar" id="avatar-preview" style="width:84px; height:84px; font-size:32px; margin:0 auto 16px;">?</div>
+        <label for="avatar-input" class="avatar-edit-btn" title="Change photo">✎</label>
+        <input type="file" id="avatar-input" accept="image/*" style="display:none;" />
       </div>
 
-      <div class="profile-meta">
-        <span id="member-since-line">Loading...</span>
-        <span id="friend-count-line" style="display:none;">· <b id="friend-count">0</b> friends</span>
-      </div>
+      <h1 id="profile-display-name" style="text-align:center; margin-bottom:4px;">Your Profile</h1>
+      <p class="sub" id="profile-meta" style="text-align:center; margin-bottom:18px;">Registered Member</p>
 
-      <p class="form-error" id="avatar-error"></p>
-      <div id="remove-photo-row" style="text-align:center; margin:-14px 0 22px; display:none;">
-        <a href="#" id="remove-photo-link" style="color:var(--muted); font-size:12.5px; text-decoration:underline;">Remove photo</a>
+      <div class="profile-stats">
+        <div class="profile-stat">
+          <span class="profile-stat-num" id="stat-friends">0</span>
+          <span class="profile-stat-label">Friends</span>
+        </div>
       </div>
 
       <div class="field">
         <label>Username</label>
-        <input type="text" id="username" class="text-input" placeholder="Your username" autocomplete="username" />
+        <input type="text" id="prof-username" class="text-input" placeholder="Username" />
       </div>
 
       <div class="field">
-        <label>Bio <span class="optional">optional</span></label>
-        <textarea id="bio" class="text-input" rows="3" maxlength="160" placeholder="A line or two about you..." style="resize:vertical; min-height:unset;"></textarea>
-        <p class="field-hint"><span id="bio-count">0</span>/160</p>
+        <label>Age <span class="optional">(18-99, optional)</span></label>
+        <input type="number" id="prof-age" min="18" max="99" class="text-input" placeholder="Age" />
       </div>
 
       <div class="field">
-        <label>Age <span class="optional">optional</span></label>
-        <input type="number" id="age" class="text-input" placeholder="18-99" min="18" max="99" />
+        <label>Bio <span class="optional">(Max 160 characters)</span></label>
+        <textarea id="prof-bio" class="text-input" style="min-height:80px; resize:vertical;" maxlength="160" placeholder="Tell strangers something interesting..."></textarea>
       </div>
 
       <p class="form-error" id="form-error"></p>
       <p class="form-success" id="form-success"></p>
 
-      <button class="btn" id="save-btn">Save changes</button>
-      <p class="footnote"><a href="friends.html" style="color:var(--signal);">View your friends &amp; chat history →</a></p>
+      <button class="btn" id="save-btn">Save Changes</button>
     </div>
   </div>
 </div>
 
 <script>
-  const API_BASE = ""; // Set to your live Render URL once deployed.
+  const API_BASE = "";
 
   function getAuth(){
     const token = localStorage.getItem('wl_auth_token');
@@ -105,7 +105,8 @@
     return token && username ? { token, username } : null;
   }
 
-  let auth = getAuth();
+  const auth = getAuth();
+  if(!auth) window.location.href = 'login.html';
 
   document.getElementById('nav-logout').addEventListener('click', (e)=>{
     e.preventDefault();
@@ -114,184 +115,109 @@
     window.location.href = 'index.html';
   });
 
-  if(!auth){
-    document.getElementById('signed-out-notice').style.display = 'flex';
-    document.getElementById('profile-view').style.display = 'none';
-  } else {
-    loadProfile();
-  }
-
-  async function authedFetch(path, options = {}){
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${auth.token}`,
-        ...(options.headers || {}),
-      },
-    });
-    if(res.status === 401){
-      localStorage.removeItem('wl_auth_token');
-      localStorage.removeItem('wl_username');
-      window.location.href = 'login.html';
-      return null;
-    }
-    return res.json();
-  }
-
+  const usernameInput = document.getElementById('prof-username');
+  const ageInput = document.getElementById('prof-age');
+  const bioInput = document.getElementById('prof-bio');
   const avatarPreview = document.getElementById('avatar-preview');
-  const usernameInput = document.getElementById('username');
-  const bioInput = document.getElementById('bio');
-  const bioCount = document.getElementById('bio-count');
-  const ageInput = document.getElementById('age');
+  const avatarFileInput = document.getElementById('avatar-input');
+  const errorEl = document.getElementById('form-error');
+  const successEl = document.getElementById('form-success');
   const saveBtn = document.getElementById('save-btn');
-  const formError = document.getElementById('form-error');
-  const formSuccess = document.getElementById('form-success');
-  const avatarError = document.getElementById('avatar-error');
-  const removePhotoRow = document.getElementById('remove-photo-row');
 
-  let currentAvatarData = '';
-  let pendingAvatarData = undefined; // undefined = no change; '' = remove
-
-  function renderAvatar(dataUrl, usernameForInitial){
-    if(dataUrl){
-      avatarPreview.innerHTML = `<img src="${dataUrl}" alt="Your avatar" />`;
-      removePhotoRow.style.display = 'block';
-    } else {
-      avatarPreview.textContent = (usernameForInitial || '?').charAt(0).toUpperCase();
-      removePhotoRow.style.display = 'none';
-    }
-  }
-
-  function updateBioCount(){
-    bioCount.textContent = bioInput.value.length;
-  }
-  bioInput.addEventListener('input', updateBioCount);
+  let base64Avatar = '';
 
   async function loadProfile(){
-    const data = await authedFetch('/api/auth/me');
-    if(!data || !data.loggedIn) return;
-    usernameInput.value = data.username || '';
-    bioInput.value = data.bio || '';
-    ageInput.value = data.age || '';
-    updateBioCount();
-    currentAvatarData = data.avatarData || '';
-    renderAvatar(currentAvatarData, data.username);
-
-    const since = data.memberSince ? new Date(data.memberSince).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : null;
-    document.getElementById('member-since-line').textContent = since ? `Member since ${since}` : '';
-    if(typeof data.friendCount === 'number'){
-      document.getElementById('friend-count').textContent = data.friendCount;
-      document.getElementById('friend-count-line').style.display = 'inline';
-    }
-  }
-
-  document.getElementById('avatar-input').addEventListener('change', async (e)=>{
-    const file = e.target.files[0];
-    e.target.value = '';
-    if(!file) return;
-    avatarError.textContent = '';
-    if(!file.type.startsWith('image/')){
-      avatarError.textContent = 'Please choose an image file.';
-      return;
-    }
     try {
-      const resized = await resizeImageToDataUrl(file, 200, 0.82);
-      pendingAvatarData = resized;
-      renderAvatar(resized, usernameInput.value);
-    } catch (err) {
-      avatarError.textContent = 'Could not read that image — try a different one.';
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${auth.token}` }
+      });
+      const data = await res.json();
+      if(!data.loggedIn){
+        localStorage.removeItem('wl_auth_token');
+        localStorage.removeItem('wl_username');
+        window.location.href = 'login.html';
+        return;
+      }
+      usernameInput.value = data.username || '';
+      document.getElementById('profile-display-name').textContent = data.username || 'Profile';
+      if(data.age) ageInput.value = data.age;
+      if(data.bio) bioInput.value = data.bio;
+      document.getElementById('stat-friends').textContent = data.friendCount || 0;
+
+      if(data.avatarData){
+        base64Avatar = data.avatarData;
+        avatarPreview.innerHTML = `<img src="${data.avatarData}" alt="Avatar">`;
+      } else {
+        avatarPreview.textContent = (data.username || '?')[0].toUpperCase();
+      }
+    } catch(err){
+      errorEl.textContent = 'Could not load profile details.';
     }
-  });
-
-  document.getElementById('remove-photo-link').addEventListener('click', (e)=>{
-    e.preventDefault();
-    pendingAvatarData = '';
-    renderAvatar('', usernameInput.value);
-  });
-
-  // Resizes/compresses an image client-side so the resulting data URL
-  // comfortably fits the server's 60,000-character avatar limit, then
-  // steps quality down further if a very busy image still comes in large.
-  function resizeImageToDataUrl(file, maxDim, quality){
-    return new Promise((resolve, reject)=>{
-      const reader = new FileReader();
-      reader.onerror = () => reject(new Error('read failed'));
-      reader.onload = () => {
-        const img = new Image();
-        img.onerror = () => reject(new Error('decode failed'));
-        img.onload = () => {
-          let { width, height } = img;
-          if(width > height){
-            if(width > maxDim){ height = Math.round(height * (maxDim / width)); width = maxDim; }
-          } else {
-            if(height > maxDim){ width = Math.round(width * (maxDim / height)); height = maxDim; }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          let q = quality;
-          let dataUrl = canvas.toDataURL('image/jpeg', q);
-          while(dataUrl.length > 58000 && q > 0.3){
-            q -= 0.15;
-            dataUrl = canvas.toDataURL('image/jpeg', q);
-          }
-          if(dataUrl.length > 60000){
-            reject(new Error('too large'));
-            return;
-          }
-          resolve(dataUrl);
-        };
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    });
   }
+  loadProfile();
+
+  avatarFileInput.addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 120;
+        let w = img.width, h = img.height;
+        if(w > h){ h = (h / w) * maxDim; w = maxDim; }
+        else { w = (w / h) * maxDim; h = maxDim; }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        base64Avatar = canvas.toDataURL('image/jpeg', 0.8);
+        avatarPreview.innerHTML = `<img src="${base64Avatar}" alt="Avatar">`;
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 
   saveBtn.addEventListener('click', async ()=>{
-    formError.textContent = '';
-    formSuccess.textContent = '';
+    errorEl.textContent = '';
+    successEl.textContent = '';
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
 
     const payload = {
       username: usernameInput.value.trim(),
-      bio: bioInput.value,
-      age: ageInput.value ? ageInput.value : null,
+      bio: bioInput.value.trim(),
+      age: ageInput.value ? parseInt(ageInput.value, 10) : null,
+      avatarData: base64Avatar
     };
-    if(pendingAvatarData === ''){
-      payload.removeAvatar = true;
-    } else if(pendingAvatarData){
-      payload.avatarData = pendingAvatarData;
-    }
 
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'Saving...';
     try {
-      const data = await authedFetch('/api/profile', {
+      const res = await fetch(`${API_BASE}/api/profile`, {
         method: 'PUT',
-        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${auth.token}`
+        },
+        body: JSON.stringify(payload)
       });
-      if(!data) return;
-      if(!data.success){
-        formError.textContent = data.error || 'Could not save your changes.';
-        return;
+      const data = await res.json();
+      if(!res.ok){
+        errorEl.textContent = data.error || 'Failed to update profile.';
+      } else {
+        successEl.textContent = 'Profile updated successfully!';
+        if(data.token){
+          localStorage.setItem('wl_auth_token', data.token);
+          localStorage.setItem('wl_username', data.username);
+        }
+        document.getElementById('profile-display-name').textContent = data.username;
       }
-      if(data.token){
-        localStorage.setItem('wl_auth_token', data.token);
-        auth.token = data.token;
-      }
-      localStorage.setItem('wl_username', data.username);
-      currentAvatarData = data.avatarData || '';
-      pendingAvatarData = undefined;
-      renderAvatar(currentAvatarData, data.username);
-      formSuccess.textContent = 'Saved.';
-    } catch (err) {
-      formError.textContent = 'Something went wrong. Try again.';
+    } catch(err){
+      errorEl.textContent = 'Server error updating profile.';
     } finally {
       saveBtn.disabled = false;
-      saveBtn.textContent = 'Save changes';
+      saveBtn.textContent = 'Save Changes';
     }
   });
 </script>
