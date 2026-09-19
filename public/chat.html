@@ -11,12 +11,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <style>
-  /* WhatsApp-style Reaction System */
   .msg {
     position: relative;
     user-select: none;
     -webkit-user-select: none;
-    cursor: pointer;
   }
   
   .reaction-bar {
@@ -24,7 +22,7 @@
     position: absolute;
     top: -46px;
     background: #232d36;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 24px;
     padding: 4px 8px;
     gap: 8px;
@@ -52,7 +50,10 @@
     line-height: 1;
   }
   .reaction-bar button:hover { transform: scale(1.35); }
-  .reaction-bar button.active { background: rgba(255, 255, 255, 0.15); border-radius: 12px; }
+  .reaction-bar button.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+  }
 
   .wa-reaction-badge {
     display: none;
@@ -72,9 +73,13 @@
     cursor: pointer;
     z-index: 5;
     line-height: 1;
-    box-sizing: border-box;
   }
-  .wa-reaction-badge.multi { border-radius: 12px; width: auto; padding: 0 6px; gap: 2px; }
+  .wa-reaction-badge.multi {
+    border-radius: 12px;
+    width: auto;
+    padding: 0 6px;
+    gap: 2px;
+  }
   .msg.me .wa-reaction-badge { right: 8px; }
   .msg.them .wa-reaction-badge { left: 8px; }
   .wa-reaction-badge.show { display: inline-flex; }
@@ -97,7 +102,6 @@
     max-width: 420px;
     padding: 16px 20px 24px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.6);
   }
   .reaction-sheet-header {
     font-weight: 600;
@@ -108,7 +112,11 @@
     justify-content: space-between;
     align-items: center;
   }
-  .reaction-sheet-list { display: flex; flex-direction: column; gap: 10px; }
+  .reaction-sheet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
   .reaction-sheet-item {
     display: flex;
     align-items: center;
@@ -117,8 +125,20 @@
     background: rgba(255, 255, 255, 0.04);
     border-radius: 10px;
   }
-  .reaction-sheet-user { display: flex; align-items: center; gap: 10px; color: #e9edef; font-size: 14px; }
-  .reaction-sheet-remove { background: transparent; border: none; color: #f15c6d; font-size: 12px; cursor: pointer; padding: 4px 6px; }
+  .reaction-sheet-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #e9edef;
+    font-size: 14px;
+  }
+  .reaction-sheet-remove {
+    background: transparent;
+    border: none;
+    color: #f15c6d;
+    font-size: 12px;
+    cursor: pointer;
+  }
 
   .peer .name.registered-user {
     cursor: pointer;
@@ -126,141 +146,27 @@
     text-underline-offset: 3px;
   }
   .peer .name.registered-user:hover { color: var(--signal); }
-
-  /* Mode-Specific Animated Description Box */
-  .mode-desc-showcase {
-    background: linear-gradient(135deg, rgba(47, 107, 255, 0.08), rgba(27, 35, 84, 0.6));
-    border: 1.5px solid var(--signal);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 20px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(47, 107, 255, 0.2);
-    animation: showcase-slide 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  .mode-desc-showcase.video-mode-theme {
-    background: linear-gradient(135deg, rgba(255, 59, 78, 0.08), rgba(27, 35, 84, 0.6));
-    border-color: var(--rose);
-    box-shadow: 0 8px 24px rgba(255, 59, 78, 0.2);
-  }
-  @keyframes showcase-slide {
-    0% { opacity: 0; transform: translateY(-8px) scale(0.98); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  .mds-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  .mds-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14.5px;
-    font-weight: 700;
-    color: #fff;
-  }
-  .mds-tag {
-    font-size: 10.5px;
-    font-family: 'IBM Plex Mono', monospace;
-    padding: 3px 8px;
-    border-radius: 999px;
-    background: var(--signal);
-    color: #fff;
-    letter-spacing: 0.04em;
-  }
-  .video-mode-theme .mds-tag { background: var(--rose); }
-
-  .mds-desc {
-    font-size: 12.5px;
-    color: var(--muted);
-    line-height: 1.5;
-    margin: 0 0 12px;
-  }
-  .mds-features {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-  .mds-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 6px 10px;
-    font-size: 11.5px;
-    color: var(--text);
-  }
-  .mds-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: #49D6C4;
-    box-shadow: 0 0 6px #49D6C4;
-    flex: none;
-  }
-  .video-mode-theme .mds-dot { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
 </style>
 </head>
-<body>
+<body class="has-siderail">
+<nav class="side-rail" aria-label="Quick access">
+  <a href="profile.html" class="side-rail-link" title="Profile">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+  </a>
+  <a href="chat.html?open=recent" class="side-rail-link" title="Recent Chats">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+  </a>
+  <a href="friends.html" class="side-rail-link" title="Friends">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><circle cx="18" cy="9" r="2.4"/><path d="M15.5 14.2c2.6.4 4.5 2 4.5 4.3"/></svg>
+  </a>
+</nav>
+
 <div class="stars-layer stars-small" aria-hidden="true"></div>
 <div class="stars-layer stars-medium" aria-hidden="true"></div>
 <div class="stars-layer stars-large" aria-hidden="true"></div>
 
-<!-- Slide-out Drawer Menu -->
-<div class="drawer-backdrop" id="drawer-backdrop"></div>
-<aside class="drawer" id="side-drawer" aria-label="Slide Menu">
-  <div class="drawer-header">
-    <div class="drawer-title">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg>
-      Navigation
-    </div>
-    <button class="drawer-close" id="drawer-close-btn" aria-label="Close menu">✕</button>
-  </div>
-  <div class="drawer-links">
-    <a href="profile.html" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-      Profile
-    </a>
-    <a href="chat.html?open=recent" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
-      Recent Chats
-    </a>
-    <a href="friends.html" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/></svg>
-      Friends
-    </a>
-    <hr class="drawer-separator">
-    <a href="chat.html?mode=text" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Text Chat
-    </a>
-    <a href="chat.html?mode=video" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-      Video Chat
-    </a>
-    <hr class="drawer-separator">
-    <a href="guidelines.html" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      Guidelines
-    </a>
-    <a href="privacy.html" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      Privacy Policy
-    </a>
-  </div>
-</aside>
-
 <nav class="site-nav">
   <div class="nav-left">
-    <button class="menu-btn" id="menu-toggle-btn" aria-label="Toggle navigation">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
     <a href="index.html" class="brand"><svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
       <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18">
         <animate attributeName="opacity" values="0.10;0.28;0.10" dur="2.4s" repeatCount="indefinite"/>
@@ -293,33 +199,15 @@
   <!-- Screen 1: Setup -->
   <div class="card" id="screen-setup">
     <h1 id="setup-heading">Find a signal.</h1>
-    <p class="sub" id="setup-subheading">Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.</p>
-
-    <!-- Animated Mode Description Box (Updates dynamically on Text/Video selection) -->
-    <div class="mode-desc-showcase" id="mode-desc-showcase">
-      <div class="mds-header">
-        <div class="mds-title">
-          <span id="mds-icon">💬</span>
-          <span id="mds-title-text">Text Chat Protocol</span>
-        </div>
-        <span class="mds-tag" id="mds-tag">SECURE P2P</span>
-      </div>
-      <p class="mds-desc" id="mds-desc">Instant typed conversations routed securely through active memory. No disk traces, no accounts, complete anonymity.</p>
-      <div class="mds-features" id="mds-features">
-        <div class="mds-pill"><span class="mds-dot"></span><span>Real-time typing indicator</span></div>
-        <div class="mds-pill"><span class="mds-dot"></span><span>GIFs & sticker support</span></div>
-        <div class="mds-pill"><span class="mds-dot"></span><span>WhatsApp-style reactions</span></div>
-        <div class="mds-pill"><span class="mds-dot"></span><span>One-tap partner skipping</span></div>
-      </div>
-    </div>
+    <p class="sub" id="setup-subheading">Talk anonymously with a random stranger. No account, no history.</p>
 
     <div class="field" id="mode-field">
-      <label>Choose Chat Type</label>
+      <label>Chat type</label>
       <div class="choice-row" id="mode-row">
-        <div class="choice active" data-m="text">💬 Text Chat</div>
-        <div class="choice" data-m="video">📹 Video Chat</div>
+        <div class="choice active" data-m="text">💬 Text chat</div>
+        <div class="choice" data-m="video">📹 Video chat</div>
       </div>
-      <p class="premium-hint" id="video-hint" style="display:none;">Video chat needs camera and mic access. You'll be asked to allow it once you start.</p>
+      <p class="premium-hint" id="video-hint" style="display:none;">Video chat requests camera and mic access.</p>
     </div>
 
     <div class="camera-preview-wrap" id="camera-preview-wrap" style="display:none;">
@@ -343,11 +231,11 @@
         <div class="choice locked-choice" data-g="male">Male <span class="lock-ico">🔒</span></div>
         <div class="choice locked-choice" data-g="female">Female <span class="lock-ico">🔒</span></div>
       </div>
-      <p class="premium-hint">Free users are matched with anyone. Upgrade to pick who you talk to.</p>
+      <p class="premium-hint">Free users match with anyone. Premium allows choosing partner gender.</p>
     </div>
 
     <div class="field">
-      <label>Your interests <span class="optional">(optional — we'll try to match you with someone who shares them)</span></label>
+      <label>Interests <span class="optional">(optional)</span></label>
       <div class="interest-row" id="interest-row">
         <div class="interest-tag" data-i="music">🎧 Music</div>
         <div class="interest-tag" data-i="gaming">🎮 Gaming</div>
@@ -364,21 +252,20 @@
 
     <div class="guidelines-box">
       <input type="checkbox" id="agree" />
-      <p>I'm 18 or older. I won't share personal info, harass anyone, or post illegal content. I understand chats aren't actively moderated in real time and I can report or leave at any point. Read the <a href="guidelines.html" style="color:var(--signal);">full guidelines</a>.</p>
+      <p>I confirm I am 18 or older and agree to the <a href="guidelines.html" style="color:var(--signal);">Guidelines</a>.</p>
     </div>
 
     <button class="btn" id="start-btn" disabled>Start chatting</button>
-    <p class="footnote" id="setup-footnote">Be someone worth talking to.</p>
   </div>
 
-  <!-- Premium upsell modal -->
+  <!-- Premium modal -->
   <div class="modal-backdrop" id="premium-modal">
     <div class="modal-card">
       <div class="modal-icon">🔒</div>
       <h2>Choose who you talk to</h2>
-      <p>Upgrade to Premium to match only with the gender you pick, skip more often, and get priority matching.</p>
+      <p>Upgrade to Premium to match by gender preference.</p>
       <button class="btn" id="modal-upgrade-btn">Upgrade to Premium</button>
-      <button class="btn secondary" id="modal-close-btn">Maybe later</button>
+      <button class="btn secondary" id="modal-close-btn" style="margin-top:10px;">Maybe later</button>
     </div>
   </div>
 
@@ -386,9 +273,7 @@
   <div class="card" id="screen-waiting" style="display:none;">
     <div class="tuner">
       <div class="scanner">
-        <div class="scanner-rings">
-          <span></span><span></span><span></span>
-        </div>
+        <div class="scanner-rings"><span></span><span></span><span></span></div>
         <div class="scanner-sweep"></div>
         <div class="scanner-blips" id="scanner-blips"></div>
         <div class="scanner-core">
@@ -402,7 +287,7 @@
     <button class="btn secondary" id="cancel-btn">Cancel</button>
   </div>
 
-  <!-- Match flash overlay -->
+  <!-- Flash Notification -->
   <div class="match-flash" id="match-flash">
     <div class="flash-burst">SIGNAL LOCKED</div>
     <div class="flash-shared" id="flash-shared"></div>
@@ -431,8 +316,8 @@
       <video id="local-video" autoplay playsinline muted></video>
       <div class="video-status" id="video-status">Connecting camera...</div>
       <div class="video-controls">
-        <button class="icon-btn" id="toggle-mic-btn" title="Mute/unmute">🎤</button>
-        <button class="icon-btn" id="toggle-cam-btn" title="Camera on/off">📹</button>
+        <button class="icon-btn" id="toggle-mic-btn">🎤</button>
+        <button class="icon-btn" id="toggle-cam-btn">📹</button>
       </div>
     </div>
 
@@ -451,16 +336,17 @@
     </div>
 
     <div class="composer">
-      <button class="icon-btn picker-toggle" id="sticker-toggle-btn" title="Stickers">😊</button>
-      <button class="icon-btn picker-toggle" id="gif-toggle-btn" title="GIFs">GIF</button>
+      <button class="icon-btn picker-toggle" id="sticker-toggle-btn" type="button">😊</button>
+      <button class="icon-btn picker-toggle" id="gif-toggle-btn" type="button">GIF</button>
       <input type="text" id="msg-input" placeholder="Say something..." maxlength="1000" />
-      <button id="send-btn">Send</button>
+      <button id="send-btn" type="button">Send</button>
     </div>
   </div>
 
 </div>
 </div>
 
+<!-- WhatsApp-Style Reaction Details Sheet -->
 <div class="reaction-modal-backdrop" id="reaction-modal">
   <div class="reaction-sheet">
     <div class="reaction-sheet-header">
@@ -471,20 +357,23 @@
   </div>
 </div>
 
+<!-- Profile Modal (Partner Details) -->
 <div class="modal-backdrop" id="profile-modal">
   <div class="modal-card">
     <div class="avatar" id="profile-modal-avatar" style="margin: 0 auto 12px; font-size: 28px; width: 64px; height: 64px; line-height: 64px;">?</div>
     <h2 id="profile-modal-username">Username</h2>
-    <p class="sub" id="profile-modal-badge">Registered Member</p>
+    <p class="sub" id="profile-modal-meta" style="margin-bottom:8px;">Registered Member</p>
+    <p id="profile-modal-bio" style="font-size:13px; color:var(--muted); margin-bottom:12px;"></p>
     <div id="profile-modal-interests" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin: 15px 0;"></div>
     <button class="btn secondary" id="profile-modal-close">Close</button>
   </div>
 </div>
 
+<!-- Recent Chats Modal -->
 <div class="modal-backdrop" id="recent-chats-modal">
   <div class="modal-card" style="max-height: 80vh; display: flex; flex-direction: column; text-align: left;">
     <h2>Recent Chats</h2>
-    <p class="sub" style="margin-bottom: 12px;">Your recent conversation sessions stored on this device.</p>
+    <p class="sub" style="margin-bottom: 12px;">Saved conversations from this device.</p>
     <div id="recent-chats-list" style="overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;"></div>
     <button class="btn secondary" id="recent-modal-close">Close</button>
   </div>
@@ -497,23 +386,6 @@
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-  // 3-Bar Drawer Toggle Logic
-  const menuBtn = document.getElementById('menu-toggle-btn');
-  const drawer = document.getElementById('side-drawer');
-  const drawerBackdrop = document.getElementById('drawer-backdrop');
-  const drawerCloseBtn = document.getElementById('drawer-close-btn');
-
-  function toggleDrawer(open) {
-    const isOpen = open !== undefined ? open : !drawer.classList.contains('open');
-    drawer.classList.toggle('open', isOpen);
-    drawerBackdrop.classList.toggle('show', isOpen);
-    if (menuBtn) menuBtn.classList.toggle('open', isOpen);
-  }
-
-  if (menuBtn) menuBtn.addEventListener('click', () => toggleDrawer());
-  if (drawerBackdrop) drawerBackdrop.addEventListener('click', () => toggleDrawer(false));
-  if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', () => toggleDrawer(false));
-
   const API_BASE = window.BACKEND_URL || '';
 
   function getAuth(){
@@ -530,15 +402,15 @@
     auth: (cb) => cb({ token: (getAuth() || {}).token }),
   });
 
-  (function renderNavAuth(){
+  (function initNav(){
     const auth = getAuth();
     const navLogin = document.getElementById('nav-login');
     const navLogout = document.getElementById('nav-logout');
-    const navContacts = document.getElementById('nav-friends');
+    const navFriends = document.getElementById('nav-friends');
     if(auth){
       if(navLogin){ navLogin.textContent = auth.username; navLogin.href = 'profile.html'; }
       if(navLogout) navLogout.style.display = '';
-      if(navContacts) navContacts.style.display = '';
+      if(navFriends) navFriends.style.display = '';
     }
     if(navLogout){
       navLogout.addEventListener('click', (e)=>{
@@ -564,23 +436,6 @@
   const premiumModal = document.getElementById('premium-modal');
   const upgradeBtn = document.getElementById('modal-upgrade-btn');
 
-  const setupCard = document.getElementById('screen-setup');
-  const setupHeading = document.getElementById('setup-heading');
-  const setupSubheading = document.getElementById('setup-subheading');
-  const setupFootnote = document.getElementById('setup-footnote');
-  const cameraPreviewWrap = document.getElementById('camera-preview-wrap');
-  const cameraPreviewVideo = document.getElementById('setup-camera-preview');
-  const cameraPreviewLabel = document.getElementById('camera-preview-label');
-  let previewStream = null;
-
-  // Mode Showcase DOM Elements
-  const modeDescShowcase = document.getElementById('mode-desc-showcase');
-  const mdsIcon = document.getElementById('mds-icon');
-  const mdsTitleText = document.getElementById('mds-title-text');
-  const mdsTag = document.getElementById('mds-tag');
-  const mdsDesc = document.getElementById('mds-desc');
-  const mdsFeatures = document.getElementById('mds-features');
-
   function setupChoiceRow(row, onPick){
     row.querySelectorAll('.choice').forEach(el=>{
       el.addEventListener('click', ()=>{
@@ -593,14 +448,20 @@
   setupChoiceRow(genderRow, g => { myGender = g; validate(); });
   setupChoiceRow(modeRow, m => { myMode = m; applyModeUI(m); });
 
+  const setupCard = document.getElementById('screen-setup');
+  const cameraPreviewWrap = document.getElementById('camera-preview-wrap');
+  const cameraPreviewVideo = document.getElementById('setup-camera-preview');
+  const cameraPreviewLabel = document.getElementById('camera-preview-label');
+  let previewStream = null;
+
   async function startCameraPreview(){
-    cameraPreviewLabel.textContent = 'Checking your camera...';
+    cameraPreviewLabel.textContent = 'Checking camera...';
     try {
       previewStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       cameraPreviewVideo.srcObject = previewStream;
-      cameraPreviewLabel.textContent = "You're all set — this is what they'll see.";
-    } catch (err) {
-      cameraPreviewLabel.textContent = "Camera access denied — you can still try, or switch to text chat.";
+      cameraPreviewLabel.textContent = "Camera active — stranger preview ready.";
+    } catch {
+      cameraPreviewLabel.textContent = "Camera access denied. Switch to text chat if needed.";
     }
   }
   function stopCameraPreview(){
@@ -614,65 +475,27 @@
   function applyModeUI(m){
     videoHint.style.display = m === 'video' ? 'block' : 'none';
     setupCard.classList.toggle('mode-video', m === 'video');
-
-    // Trigger re-render of showcase animation
-    modeDescShowcase.classList.remove('video-mode-theme');
-    void modeDescShowcase.offsetWidth;
-
     if(m === 'video'){
-      setupHeading.textContent = 'Get face to face.';
-      setupSubheading.textContent = "Camera on, meet a real stranger live. Skip anytime, no recording, no history.";
-      setupFootnote.textContent = 'Good lighting helps more than you think.';
-      
-      modeDescShowcase.classList.add('video-mode-theme');
-      mdsIcon.textContent = '📹';
-      mdsTitleText.textContent = 'Live WebRTC Video Protocol';
-      mdsTag.textContent = 'DIRECT P2P STREAM';
-      mdsDesc.textContent = 'High-definition browser video and audio streams tunnel directly peer-to-peer. Streams never touch or record to a central server.';
-      mdsFeatures.innerHTML = `
-        <div class="mds-pill"><span class="mds-dot"></span><span>Zero server stream storage</span></div>
-        <div class="mds-pill"><span class="mds-dot"></span><span>Live camera self-preview</span></div>
-        <div class="mds-pill"><span class="mds-dot"></span><span>One-tap mic & camera toggle</span></div>
-        <div class="mds-pill"><span class="mds-dot"></span><span>Instant partner switching</span></div>
-      `;
-
       cameraPreviewWrap.style.display = 'block';
       startCameraPreview();
     } else {
-      setupHeading.textContent = 'Find a signal.';
-      setupSubheading.textContent = "Talk anonymously with a random stranger. No account, no history — just close the tab when you're done.";
-      setupFootnote.textContent = 'Be someone worth talking to.';
-
-      mdsIcon.textContent = '💬';
-      mdsTitleText.textContent = 'Encrypted Text Chat Protocol';
-      mdsTag.textContent = 'SECURE MEMORY RAM';
-      mdsDesc.textContent = 'Instant typed conversations routed securely through active memory. No disk traces, no accounts, complete anonymity.';
-      mdsFeatures.innerHTML = `
-        <div class="mds-pill"><span class="mds-dot"></span><span>Real-time typing indicator</span></div>
-        <div class="mds-pill"><span class="mds-dot"></span><span>GIFs & sticker support</span></div>
-        <div class="mds-pill"><span class="mds-dot"></span><span>WhatsApp-style reactions</span></div>
-        <div class="mds-pill"><span class="mds-dot"></span><span>One-tap partner skipping</span></div>
-      `;
-
       cameraPreviewWrap.style.display = 'none';
       stopCameraPreview();
     }
   }
 
-  (function preselectModeFromQuery(){
+  (function preselectMode(){
     const params = new URLSearchParams(window.location.search);
-    const wantedMode = params.get('mode');
-    if(wantedMode === 'text' || wantedMode === 'video'){
-      const target = modeRow.querySelector(`.choice[data-m="${wantedMode}"]`);
+    const m = params.get('mode');
+    if(m === 'text' || m === 'video'){
+      const target = modeRow.querySelector(`.choice[data-m="${m}"]`);
       if(target){
         modeRow.querySelectorAll('.choice').forEach(c=>c.classList.remove('active'));
         target.classList.add('active');
-        myMode = wantedMode;
-        applyModeUI(wantedMode);
+        myMode = m;
+        applyModeUI(m);
       }
       document.getElementById('mode-field').style.display = 'none';
-    } else {
-      applyModeUI('text');
     }
   })();
 
@@ -688,22 +511,20 @@
   function setStoredPremium(token, expiresAt){
     localStorage.setItem('wl_premium', JSON.stringify({ token, expiresAt }));
   }
-  function isUnlocked(){
-    return !!getStoredPremium();
-  }
 
   function unlockPreferRow(){
     preferRow.classList.remove('locked');
     preferRow.querySelectorAll('.lock-ico').forEach(el => el.remove());
-    document.querySelector('.premium-hint').textContent = "You're on Premium — pick exactly who you talk to.";
+    const hint = document.querySelector('.premium-hint');
+    if (hint) hint.textContent = "Premium Unlocked: Choose gender preference freely.";
   }
 
-  if(isUnlocked()) unlockPreferRow();
+  if(getStoredPremium()) unlockPreferRow();
 
   preferRow.querySelectorAll('.choice').forEach(el=>{
     el.addEventListener('click', ()=>{
       const wantsSpecific = el.dataset.g !== 'any';
-      if(wantsSpecific && !isUnlocked()){
+      if(wantsSpecific && !getStoredPremium()){
         premiumModal.classList.add('show');
         return;
       }
@@ -714,26 +535,21 @@
     });
   });
 
-  document.getElementById('modal-close-btn').addEventListener('click', ()=>{
-    premiumModal.classList.remove('show');
-  });
+  document.getElementById('modal-close-btn').addEventListener('click', ()=> premiumModal.classList.remove('show'));
 
   upgradeBtn.addEventListener('click', async ()=>{
     upgradeBtn.disabled = true;
-    upgradeBtn.textContent = 'Loading...';
+    upgradeBtn.textContent = 'Processing...';
     try {
       const orderRes = await fetch(`${API_BASE}/api/razorpay/create-order`, { method: 'POST' });
       const order = await orderRes.json();
-      if(!orderRes.ok || !order.orderId){
-        throw new Error(order.error || 'Could not start checkout.');
-      }
+      if(!orderRes.ok || !order.orderId) throw new Error(order.error || 'Checkout initialization failed.');
 
       const rzp = new Razorpay({
         key: order.keyId,
         amount: order.amount,
         currency: order.currency,
-        name: 'Wavelength',
-        description: 'Premium — choose who you talk to',
+        name: 'Wavelength Premium',
         order_id: order.orderId,
         theme: { color: '#2F6BFF' },
         handler: async function(response){
@@ -749,22 +565,16 @@
               unlockPreferRow();
               premiumModal.classList.remove('show');
             } else {
-              alert('Payment succeeded but verification failed — please contact support before trying again.');
+              alert('Payment verification failed. Please contact support.');
             }
-          } catch (e){
-            alert('Something went wrong verifying your payment. Please contact support.');
+          } catch {
+            alert('Verification connection failed.');
           }
-        },
-        modal: {
-          ondismiss: function(){
-            upgradeBtn.disabled = false;
-            upgradeBtn.textContent = 'Upgrade to Premium';
-          },
-        },
+        }
       });
       rzp.open();
-    } catch (err){
-      alert(err.message || 'Payments are not set up on this server yet.');
+    } catch(err){
+      alert(err.message || 'Payment unavailable.');
     } finally {
       upgradeBtn.disabled = false;
       upgradeBtn.textContent = 'Upgrade to Premium';
@@ -790,6 +600,7 @@
     startBtn.disabled = !(myGender && myPrefer && agreeBox.checked);
   }
 
+  const screenSetup = document.getElementById('screen-setup');
   const screenWaiting = document.getElementById('screen-waiting');
   const screenChat = document.getElementById('screen-chat');
   const app = document.getElementById('app');
@@ -798,14 +609,6 @@
   const scannerBlips = document.getElementById('scanner-blips');
   const freqReadout = document.getElementById('freq-readout');
   const scanPhrase = document.getElementById('scan-phrase');
-  const SCAN_PHRASES = [
-    'scanning nearby frequencies',
-    'listening for a signal',
-    'searching the airwaves',
-    'triangulating a stranger',
-    'sweeping the dial',
-    'checking who\'s broadcasting',
-  ];
   let scannerTimers = [];
 
   function spawnBlip(){
@@ -824,19 +627,8 @@
     stopScanner();
     scannerTimers.push(setInterval(spawnBlip, 420));
     scannerTimers.push(setInterval(()=>{
-      const freq = (87 + Math.random() * 20).toFixed(1);
-      freqReadout.textContent = freq;
+      freqReadout.textContent = (87 + Math.random() * 20).toFixed(1);
     }, 260));
-    let phraseIdx = 0;
-    scanPhrase.textContent = SCAN_PHRASES[0];
-    scannerTimers.push(setInterval(()=>{
-      phraseIdx = (phraseIdx + 1) % SCAN_PHRASES.length;
-      scanPhrase.style.opacity = '0';
-      setTimeout(()=>{
-        scanPhrase.textContent = SCAN_PHRASES[phraseIdx];
-        scanPhrase.style.opacity = '0.8';
-      }, 200);
-    }, 2400));
   }
 
   function stopScanner(){
@@ -846,7 +638,7 @@
   }
 
   function showScreen(name){
-    setupCard.style.display = name === 'setup' ? 'block' : 'none';
+    screenSetup.style.display = name === 'setup' ? 'block' : 'none';
     screenWaiting.style.display = name === 'waiting' ? 'block' : 'none';
     screenChat.classList.toggle('show', name === 'chat');
     app.classList.toggle('wide', name === 'chat');
@@ -855,7 +647,13 @@
 
   startBtn.addEventListener('click', ()=>{
     stopCameraPreview();
-    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, mode: myMode, premiumToken: (getStoredPremium() || {}).token });
+    socket.emit('find-partner', {
+      gender: myGender,
+      prefer: myPrefer,
+      interests: myInterests,
+      mode: myMode,
+      premiumToken: (getStoredPremium() || {}).token
+    });
     showScreen('waiting');
     waitingText.textContent = 'Tuning in to a stranger...';
   });
@@ -865,22 +663,6 @@
     showScreen('setup');
   });
 
-  window.addEventListener('beforeunload', stopVideoCall);
-
-  socket.on('waiting', ()=>{
-    waitingText.textContent = 'No one nearby yet — still searching...';
-  });
-
-  (function checkDirectConnect(){
-    const params = new URLSearchParams(window.location.search);
-    const withUser = params.get('with');
-    if(withUser && getAuth()){
-      showScreen('waiting');
-      waitingText.textContent = `Reaching out to ${withUser}...`;
-      socket.emit('direct-connect', { username: withUser });
-    }
-  })();
-
   const messagesEl = document.getElementById('messages');
   const peerAvatar = document.getElementById('peer-avatar');
   const peerState = document.getElementById('peer-state');
@@ -889,8 +671,8 @@
   const msgInput = document.getElementById('msg-input');
 
   const messageEls = {};
-  const messageReactions = {}; 
-  function genId(){ return 'm' + Date.now() + Math.random().toString(36).slice(2,8); }
+  const messageReactions = {};
+  function genId(){ return 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
   const REACTION_EMOJIS = ['👍','❤️','😂','😮'];
 
   document.addEventListener('click', (e)=>{
@@ -901,12 +683,7 @@
 
   const reactionModal = document.getElementById('reaction-modal');
   const reactionSheetList = document.getElementById('reaction-sheet-list');
-  document.getElementById('close-reaction-modal').addEventListener('click', ()=>{
-    reactionModal.classList.remove('show');
-  });
-  reactionModal.addEventListener('click', (e)=>{
-    if(e.target === reactionModal) reactionModal.classList.remove('show');
-  });
+  document.getElementById('close-reaction-modal').addEventListener('click', ()=> reactionModal.classList.remove('show'));
 
   function openReactionSheet(id){
     const reactions = messageReactions[id] || {};
@@ -917,7 +694,6 @@
     Object.entries(reactions).forEach(([user, emoji])=>{
       const item = document.createElement('div');
       item.className = 'reaction-sheet-item';
-      
       const isMe = (user === myName || user === 'You');
       item.innerHTML = `
         <div class="reaction-sheet-user">
@@ -925,7 +701,6 @@
           <span>${escapeHtml(user)} ${isMe ? '(You)' : ''}</span>
         </div>
       `;
-
       if(isMe){
         const removeBtn = document.createElement('button');
         removeBtn.className = 'reaction-sheet-remove';
@@ -937,20 +712,18 @@
             const bar = el.querySelector('.reaction-bar');
             if(bar) bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
           }
-          socket.emit('reaction', { id, emoji: null, user: myName });
+          socket.emit('reaction', { id, emoji: null });
           renderReactions(id);
           reactionModal.classList.remove('show');
         });
         item.appendChild(removeBtn);
       }
-
       reactionSheetList.appendChild(item);
     });
-
     reactionModal.classList.add('show');
   }
 
-  function addMessage(content, cls, kind, id){
+  function addMessage(content, cls, kind, id, initialReactions = {}){
     const div = document.createElement('div');
     div.className = 'msg ' + cls + (kind ? ' msg-' + kind : '');
     if(kind === 'gif'){
@@ -971,7 +744,7 @@
     if(id && kind !== 'prompt'){
       div.dataset.id = id;
       messageEls[id] = div;
-      messageReactions[id] = {};
+      messageReactions[id] = { ...initialReactions };
 
       const bar = document.createElement('div');
       bar.className = 'reaction-bar';
@@ -979,22 +752,21 @@
       REACTION_EMOJIS.forEach(emoji=>{
         const btn = document.createElement('button');
         btn.textContent = emoji;
-        btn.dataset.emoji = emoji;
         btn.addEventListener('click', (e)=>{
           e.stopPropagation();
           const auth = getAuth();
           const myName = auth ? auth.username : 'You';
-          const currentEmoji = messageReactions[id][myName];
+          const current = messageReactions[id][myName];
 
-          if(currentEmoji === emoji){
+          if(current === emoji){
             delete messageReactions[id][myName];
             btn.classList.remove('active');
-            socket.emit('reaction', { id, emoji: null, user: myName });
+            socket.emit('reaction', { id, emoji: null });
           } else {
             messageReactions[id][myName] = emoji;
             bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            socket.emit('reaction', { id, emoji, user: myName });
+            socket.emit('reaction', { id, emoji });
           }
           renderReactions(id);
           bar.classList.remove('visible');
@@ -1022,16 +794,15 @@
 
       div.addEventListener('touchstart', startHold, { passive: true });
       div.addEventListener('touchend', cancelHold);
-      div.addEventListener('touchmove', cancelHold);
       div.addEventListener('mousedown', startHold);
       div.addEventListener('mouseup', cancelHold);
-      div.addEventListener('mouseleave', cancelHold);
-      
       div.addEventListener('contextmenu', (e)=>{
         e.preventDefault();
         document.querySelectorAll('.reaction-bar.visible').forEach(b => b.classList.remove('visible'));
         bar.classList.add('visible');
       });
+
+      renderReactions(id);
     }
 
     messagesEl.appendChild(div);
@@ -1055,17 +826,15 @@
 
     const unique = [...new Set(emojis)];
     const isMulti = emojis.length > 1;
-
     badge.classList.toggle('multi', isMulti);
     badge.innerHTML = `${unique.join('')}${isMulti ? `<span style="font-weight:600;margin-left:2px;font-size:11px;">${emojis.length}</span>` : ''}`;
     badge.classList.add('show');
   }
 
   socket.on('reaction', ({ id, emoji, user })=>{
-    if(!id || !messageReactions[id]) return;
-    const partnerName = currentPartnerUsername || 'Stranger';
-    const reactor = user || partnerName;
-
+    if(!id) return;
+    if(!messageReactions[id]) messageReactions[id] = {};
+    const reactor = user || currentPartnerUsername || 'Stranger';
     if(!emoji){
       delete messageReactions[id][reactor];
     } else {
@@ -1082,11 +851,12 @@
   const matchFlash = document.getElementById('match-flash');
   const flashShared = document.getElementById('flash-shared');
   const sharedInterestsRow = document.getElementById('shared-interests-row');
-
   const addContactBtn = document.getElementById('add-contact-btn');
-  let currentPartnerUsername = null;
-  let currentPartnerInterests = [];
 
+  let currentPartnerUsername = null;
+  let currentPartnerData = null;
+
+  // WebRTC
   const videoCallEl = document.getElementById('video-call');
   const remoteVideoEl = document.getElementById('remote-video');
   const localVideoEl = document.getElementById('local-video');
@@ -1096,7 +866,6 @@
 
   let peerConnection = null;
   let localStream = null;
-  let currentMode = 'text';
 
   const RTC_CONFIG = {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
@@ -1104,16 +873,15 @@
 
   async function startVideoCall(isInitiator){
     videoCallEl.style.display = 'block';
-    videoStatusEl.textContent = 'Connecting camera...';
-
+    videoStatusEl.textContent = 'Requesting camera & mic...';
     try {
       localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    } catch (err) {
-      videoStatusEl.textContent = "Couldn't access camera/mic — check your browser permissions.";
-      addMessage("Video call needs camera and mic access. You can still chat by text below.", 'sys');
+      localVideoEl.srcObject = localStream;
+    } catch {
+      videoStatusEl.textContent = "Camera/mic denied. You can continue via text.";
+      addMessage("Camera access was blocked.", 'sys');
       return;
     }
-    localVideoEl.srcObject = localStream;
 
     peerConnection = new RTCPeerConnection(RTC_CONFIG);
     localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
@@ -1126,12 +894,6 @@
     peerConnection.onicecandidate = (event) => {
       if(event.candidate){
         socket.emit('webrtc-signal', { type: 'ice-candidate', candidate: event.candidate });
-      }
-    };
-
-    peerConnection.onconnectionstatechange = () => {
-      if(peerConnection && (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed')){
-        videoStatusEl.textContent = 'Connection lost.';
       }
     };
 
@@ -1177,42 +939,43 @@
   toggleMicBtn.addEventListener('click', ()=>{
     if(!localStream) return;
     const track = localStream.getAudioTracks()[0];
-    if(!track) return;
-    track.enabled = !track.enabled;
-    toggleMicBtn.classList.toggle('muted', !track.enabled);
-    toggleMicBtn.textContent = track.enabled ? '🎤' : '🔇';
+    if(track){
+      track.enabled = !track.enabled;
+      toggleMicBtn.textContent = track.enabled ? '🎤' : '🔇';
+    }
   });
 
   toggleCamBtn.addEventListener('click', ()=>{
     if(!localStream) return;
     const track = localStream.getVideoTracks()[0];
-    if(!track) return;
-    track.enabled = !track.enabled;
-    toggleCamBtn.classList.toggle('muted', !track.enabled);
+    if(track) track.enabled = !track.enabled;
   });
 
-  socket.on('matched', ({ partnerGender, shared, partnerUsername, history, mode, isInitiator })=>{
-    currentMode = mode || 'text';
-    if(currentMode === 'video'){
-      startVideoCall(!!isInitiator);
-    } else {
-      videoCallEl.style.display = 'none';
-    }
+  socket.on('matched', ({ partnerGender, shared, partnerUsername, partnerBio, partnerAge, partnerAvatar, history, mode, isInitiator })=>{
+    if(mode === 'video') startVideoCall(!!isInitiator);
+    else videoCallEl.style.display = 'none';
+
     messagesEl.innerHTML = '';
-    const initial = partnerGender === 'female' ? 'F' : partnerGender === 'male' ? 'M' : '?';
-    peerAvatar.textContent = initial;
-    peerAvatar.className = 'avatar' + (partnerGender === 'female' ? ' female' : '');
-    peerState.textContent = 'connected';
     currentPartnerUsername = partnerUsername || null;
-    currentPartnerInterests = shared || [];
-    
+    currentPartnerData = {
+      username: partnerUsername,
+      bio: partnerBio,
+      age: partnerAge,
+      avatarData: partnerAvatar,
+      interests: shared || []
+    };
+
+    if(partnerAvatar){
+      peerAvatar.innerHTML = `<img src="${partnerAvatar}" alt="avatar">`;
+    } else {
+      const initial = partnerGender === 'female' ? 'F' : partnerGender === 'male' ? 'M' : '?';
+      peerAvatar.textContent = initial;
+      peerAvatar.className = 'avatar' + (partnerGender === 'female' ? ' female' : '');
+    }
+
+    peerState.textContent = 'connected';
     peerNameEl.textContent = partnerUsername || 'Stranger';
     peerNameEl.classList.toggle('registered-user', !!partnerUsername);
-    if(partnerUsername){
-      peerNameEl.title = "View profile";
-    } else {
-      peerNameEl.removeAttribute('title');
-    }
 
     addContactBtn.style.display = (partnerUsername && getAuth()) ? '' : 'none';
     addContactBtn.disabled = false;
@@ -1220,14 +983,15 @@
 
     if(history && history.length){
       history.forEach(m=>{
-        const cls = m.fromUsername === (getAuth() || {}).username ? 'me' : 'them';
-        if(m.type === 'gif') addMessage(m.url, cls, 'gif', m.id);
-        else if(m.type === 'sticker') addMessage(m.emoji, cls, 'sticker', m.id);
-        else addMessage(m.text, cls, null, m.id);
+        const isMe = m.fromUsername === (getAuth() || {}).username;
+        const cls = isMe ? 'me' : 'them';
+        if(m.type === 'gif') addMessage(m.url, cls, 'gif', m.id, m.reactions);
+        else if(m.type === 'sticker') addMessage(m.emoji, cls, 'sticker', m.id, m.reactions);
+        else addMessage(m.text, cls, null, m.id, m.reactions);
       });
-      addMessage(`You're back with ${partnerUsername}. Picking up where you left off.`, 'sys');
+      addMessage(`Connected with ${partnerUsername}. Previous messages restored.`, 'sys');
     } else {
-      addMessage(partnerUsername ? `You're connected with ${partnerUsername}. Say hi.` : "You're connected with a stranger. Say hi.", 'sys');
+      addMessage(partnerUsername ? `Connected with ${partnerUsername}.` : "Connected with a stranger.", 'sys');
     }
 
     saveRecentChat(partnerUsername || 'Anonymous Stranger', 'Connected');
@@ -1241,10 +1005,10 @@
         chip.textContent = INTEREST_LABELS[i] || i;
         sharedInterestsRow.appendChild(chip);
       });
-      flashShared.textContent = `${shared.length} shared frequenc${shared.length===1?'y':'ies'}: ` + shared.map(i=>INTEREST_LABELS[i]||i).join(' · ');
+      flashShared.textContent = `${shared.length} shared interest${shared.length===1?'':'s'}`;
     } else {
       sharedInterestsRow.style.display = 'none';
-      flashShared.textContent = 'New frequency found';
+      flashShared.textContent = 'Signal acquired';
     }
 
     matchFlash.classList.add('show');
@@ -1254,34 +1018,39 @@
     msgInput.focus();
   });
 
+  // Profile Modal for Registered Stranger
   const profileModal = document.getElementById('profile-modal');
   peerNameEl.addEventListener('click', ()=>{
-    if(!currentPartnerUsername) return;
-    document.getElementById('profile-modal-username').textContent = currentPartnerUsername;
-    document.getElementById('profile-modal-avatar').textContent = peerAvatar.textContent;
-    
+    if(!currentPartnerUsername || !currentPartnerData) return;
+    document.getElementById('profile-modal-username').textContent = currentPartnerData.username;
+    document.getElementById('profile-modal-meta').textContent = currentPartnerData.age ? `Age: ${currentPartnerData.age}` : 'Registered Member';
+    document.getElementById('profile-modal-bio').textContent = currentPartnerData.bio || 'No bio provided.';
+
+    const avatarBox = document.getElementById('profile-modal-avatar');
+    if(currentPartnerData.avatarData){
+      avatarBox.innerHTML = `<img src="${currentPartnerData.avatarData}" alt="avatar">`;
+    } else {
+      avatarBox.textContent = currentPartnerData.username[0].toUpperCase();
+    }
+
     const chipBox = document.getElementById('profile-modal-interests');
     chipBox.innerHTML = '';
-    if(currentPartnerInterests.length){
-      currentPartnerInterests.forEach(i=>{
-        const span = document.createElement('span');
-        span.className = 'shared-chip';
-        span.textContent = INTEREST_LABELS[i] || i;
-        chipBox.appendChild(span);
-      });
-    }
+    (currentPartnerData.interests || []).forEach(i=>{
+      const span = document.createElement('span');
+      span.className = 'shared-chip';
+      span.textContent = INTEREST_LABELS[i] || i;
+      chipBox.appendChild(span);
+    });
     profileModal.classList.add('show');
   });
-  document.getElementById('profile-modal-close').addEventListener('click', ()=>{
-    profileModal.classList.remove('show');
-  });
+  document.getElementById('profile-modal-close').addEventListener('click', ()=> profileModal.classList.remove('show'));
 
   function saveRecentChat(name, lastMessage){
     const history = JSON.parse(localStorage.getItem('wl_recent_chats') || '[]');
     const filtered = history.filter(item => item.name !== name);
     filtered.unshift({
-      name: name,
-      lastMessage: lastMessage,
+      name,
+      lastMessage,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     });
     localStorage.setItem('wl_recent_chats', JSON.stringify(filtered.slice(0, 15)));
@@ -1293,7 +1062,7 @@
     const history = JSON.parse(localStorage.getItem('wl_recent_chats') || '[]');
     recentChatsList.innerHTML = '';
     if(!history.length){
-      recentChatsList.innerHTML = '<p style="color:#888; text-align:center; padding: 20px 0;">No recent conversations found.</p>';
+      recentChatsList.innerHTML = '<p style="color:#888; text-align:center; padding: 20px 0;">No past chats found.</p>';
     } else {
       history.forEach(c=>{
         const row = document.createElement('div');
@@ -1303,9 +1072,7 @@
             <span>${escapeHtml(c.name)}</span>
             <span style="font-size:11px; opacity:0.6;">${c.time}</span>
           </div>
-          <div style="font-size:12px; opacity:0.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-            ${escapeHtml(c.lastMessage)}
-          </div>
+          <div style="font-size:12px; opacity:0.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(c.lastMessage)}</div>
         `;
         recentChatsList.appendChild(row);
       });
@@ -1316,24 +1083,16 @@
     e.preventDefault();
     openRecentChatsModal();
   });
-  document.getElementById('recent-modal-close').addEventListener('click', ()=>{
-    recentModal.classList.remove('show');
-  });
-
-  if(new URLSearchParams(window.location.search).get('open') === 'recent'){
-    openRecentChatsModal();
-  }
+  document.getElementById('recent-modal-close').addEventListener('click', ()=> recentModal.classList.remove('show'));
+  if(new URLSearchParams(window.location.search).get('open') === 'recent') openRecentChatsModal();
 
   addContactBtn.addEventListener('click', ()=>{
     addContactBtn.disabled = true;
-    addContactBtn.textContent = 'Request sent';
+    addContactBtn.textContent = 'Request Sent';
     socket.emit('add-contact');
   });
 
-  socket.on('friend-request-sent', ({ toUsername })=>{
-    addMessage(`Friend request sent to ${toUsername}.`, 'sys');
-  });
-
+  socket.on('friend-request-sent', ({ toUsername })=> addMessage(`Friend request sent to ${toUsername}.`, 'sys'));
   socket.on('friend-request', ({ fromUsername })=>{
     const wrap = document.createElement('div');
     wrap.className = 'friend-request-msg';
@@ -1354,20 +1113,20 @@
     wrap.querySelector('.fr-decline').addEventListener('click', ()=>{
       socket.emit('respond-friend-request', { accept: false });
       wrap.remove();
-      addMessage("You declined the friend request.", 'sys');
+      addMessage("Friend request declined.", 'sys');
     });
   });
 
   socket.on('friend-request-declined', ({ username })=>{
     addContactBtn.disabled = false;
     addContactBtn.textContent = '+ Friend';
-    addMessage(`${username} declined your friend request.`, 'sys');
+    addMessage(`${username} declined the request.`, 'sys');
   });
 
   socket.on('add-contact-result', ({ success, username, error })=>{
     if(success){
       addContactBtn.textContent = '✓ Friends';
-      addMessage(`You and ${username} are now friends. Find them anytime on the Friends page.`, 'sys');
+      addMessage(`Connected with ${username} as friends!`, 'sys');
     } else {
       addContactBtn.disabled = false;
       addContactBtn.textContent = '+ Friend';
@@ -1381,11 +1140,6 @@
     return div.innerHTML;
   }
 
-  socket.on('contact-offline', ({ username })=>{
-    waitingText.textContent = `${username || 'They'} aren't online right now.`;
-    setTimeout(()=> showScreen('setup'), 1800);
-  });
-
   function sendMessage(){
     const text = msgInput.value.trim();
     if(!text) return;
@@ -1398,7 +1152,7 @@
   }
 
   document.getElementById('send-btn').addEventListener('click', sendMessage);
-  msgInput.addEventListener('keydown', e=>{
+  msgInput.addEventListener('keydown', e => {
     if(e.key === 'Enter') sendMessage();
     else socket.emit('typing', true);
   });
@@ -1412,36 +1166,56 @@
     if(!payload) return;
     if(payload.type === 'gif') {
       addMessage(payload.url, 'them', 'gif', payload.id);
-      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a GIF');
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'GIF');
     } else if(payload.type === 'sticker') {
       addMessage(payload.emoji, 'them', 'sticker', payload.id);
-      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a sticker ' + payload.emoji);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', payload.emoji);
     } else {
       addMessage(payload.text, 'them', null, payload.id);
       saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', payload.text);
     }
   });
 
-  socket.on('icebreaker', (text)=>{
-    addMessage(text, 'sys', 'prompt');
+  socket.on('typing', isTyping => {
+    typingRow.textContent = isTyping ? 'Stranger is typing...' : '';
   });
 
-  const ICEBREAKERS = [
-    "What's a small thing that made you smile this week?",
-    "Cats or dogs, and why is your answer correct?",
-    "What's a song you'd never admit to loving?",
-    "If you could teleport anywhere right now, where?",
-    "What's the last thing you binge-watched?",
-    "Tea or coffee — settle the debate.",
-    "What's a hot take you'll actually defend?",
-    "Best meal you've had this month?",
-  ];
-  document.getElementById('topic-btn').addEventListener('click', ()=>{
-    const t = ICEBREAKERS[Math.floor(Math.random()*ICEBREAKERS.length)];
-    socket.emit('icebreaker', t);
-    addMessage(t, 'sys', 'prompt');
+  socket.on('partner-left', ()=>{
+    peerState.textContent = 'disconnected';
+    addMessage('Partner left the chat.', 'sys');
+    stopVideoCall();
   });
 
+  document.getElementById('skip-btn').addEventListener('click', ()=>{
+    stopVideoCall();
+    socket.emit('skip');
+  });
+  socket.on('ready-to-requeue', ()=>{
+    socket.emit('find-partner', {
+      gender: myGender,
+      prefer: myPrefer,
+      interests: myInterests,
+      mode: myMode,
+      premiumToken: (getStoredPremium() || {}).token
+    });
+    showScreen('waiting');
+    waitingText.textContent = 'Searching for next frequency...';
+  });
+
+  document.getElementById('leave-btn').addEventListener('click', ()=>{
+    stopVideoCall();
+    socket.emit('leave');
+    showScreen('setup');
+  });
+
+  document.getElementById('report-btn').addEventListener('click', ()=>{
+    stopVideoCall();
+    socket.emit('report');
+    addMessage('Chat reported. Disconnected.', 'sys');
+    setTimeout(()=> showScreen('setup'), 900);
+  });
+
+  // Stickers & GIFs
   const STICKERS = ['😂','😍','🔥','👋','😎','🤯','💀','😭','👀','💯','🎉','😴','🤝','😏','👏','🙌','😅','🥲','😤','🫡','🤔','😈','💬','⚡'];
   const stickerPanel = document.getElementById('sticker-panel');
   STICKERS.forEach(emoji=>{
@@ -1452,7 +1226,7 @@
       const id = genId();
       socket.emit('chat-message', { type: 'sticker', emoji, id });
       addMessage(emoji, 'me', 'sticker', id);
-      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a sticker ' + emoji);
+      saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', emoji);
       stickerPanel.classList.remove('show');
     });
     stickerPanel.appendChild(btn);
@@ -1473,92 +1247,46 @@
 
   const gifGrid = document.getElementById('gif-grid');
   const gifSearch = document.getElementById('gif-search');
-  let gifSearchTimeout;
+  let gifTimeout;
 
   async function searchGifs(query){
-    if(!window.GIPHY_KEY || window.GIPHY_KEY === 'YOUR_GIPHY_API_KEY'){
-      gifGrid.innerHTML = '<div class="gif-empty">Add a Giphy API key to enable GIF search.</div>';
-      return;
-    }
-    gifGrid.innerHTML = '<div class="gif-empty">Loading...</div>';
-    
+    gifGrid.innerHTML = '<div class="gif-empty">Loading GIFs...</div>';
     const isTrending = !query || query === 'trending';
     const endpoint = isTrending
       ? `https://api.giphy.com/v1/gifs/trending?api_key=${window.GIPHY_KEY}&limit=18&rating=g`
       : `https://api.giphy.com/v1/gifs/search?api_key=${window.GIPHY_KEY}&q=${encodeURIComponent(query)}&limit=18&rating=g`;
 
-    try{
+    try {
       const res = await fetch(endpoint);
       const data = await res.json();
       gifGrid.innerHTML = '';
-
-      if(!data.data || data.data.length === 0){
+      if(!data.data || !data.data.length){
         gifGrid.innerHTML = '<div class="gif-empty">No GIFs found.</div>';
         return;
       }
-
       data.data.forEach(item=>{
-        const displayUrl = item.images?.fixed_height?.url || item.images?.original?.url;
-        const sendUrl = item.images?.original?.url || displayUrl;
-        if(!displayUrl) return;
-
+        const url = item.images?.fixed_height?.url;
+        if(!url) return;
         const img = document.createElement('img');
-        img.src = displayUrl;
-        img.alt = item.title || 'GIF';
+        img.src = url;
         img.loading = 'lazy';
         img.addEventListener('click', ()=>{
           const id = genId();
-          socket.emit('chat-message', { type: 'gif', url: sendUrl, id });
-          addMessage(sendUrl, 'me', 'gif', id);
-          saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'Sent a GIF');
+          socket.emit('chat-message', { type: 'gif', url, id });
+          addMessage(url, 'me', 'gif', id);
+          saveRecentChat(currentPartnerUsername || 'Anonymous Stranger', 'GIF');
           gifPanel.classList.remove('show');
         });
         gifGrid.appendChild(img);
       });
-    }catch(e){
-      gifGrid.innerHTML = '<div class="gif-empty">Couldn\'t load GIFs right now.</div>';
+    } catch {
+      gifGrid.innerHTML = '<div class="gif-empty">Error loading GIFs.</div>';
     }
   }
 
   gifSearch.addEventListener('input', ()=>{
-    clearTimeout(gifSearchTimeout);
-    gifSearchTimeout = setTimeout(()=>{
-      const q = gifSearch.value.trim();
-      searchGifs(q || 'trending');
-    }, 400);
-  });
-
-  socket.on('typing', (isTyping)=>{
-    typingRow.textContent = isTyping ? 'Stranger is typing...' : '';
-  });
-
-  socket.on('partner-left', ()=>{
-    peerState.textContent = 'disconnected';
-    addMessage('Stranger has left the chat.', 'sys');
-    stopVideoCall();
-  });
-
-  document.getElementById('skip-btn').addEventListener('click', ()=>{
-    stopVideoCall();
-    socket.emit('skip');
-  });
-  socket.on('ready-to-requeue', ()=>{
-    socket.emit('find-partner', { gender: myGender, prefer: myPrefer, interests: myInterests, mode: myMode, premiumToken: (getStoredPremium() || {}).token });
-    showScreen('waiting');
-    waitingText.textContent = 'Finding a new stranger...';
-  });
-
-  document.getElementById('leave-btn').addEventListener('click', ()=>{
-    stopVideoCall();
-    socket.emit('leave');
-    showScreen('setup');
-  });
-
-  document.getElementById('report-btn').addEventListener('click', ()=>{
-    stopVideoCall();
-    socket.emit('report');
-    addMessage('You reported this stranger and left the chat.', 'sys');
-    setTimeout(()=> showScreen('setup'), 900);
+    clearTimeout(gifTimeout);
+    gifTimeout = setTimeout(()=> searchGifs(gifSearch.value.trim() || 'trending'), 400);
   });
 </script>
 </body>
