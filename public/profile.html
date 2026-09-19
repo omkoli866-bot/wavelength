@@ -23,25 +23,13 @@
   </a>
 </nav>
 
-<div class="stars-layer stars-small" aria-hidden="true"></div>
-<div class="stars-layer stars-medium" aria-hidden="true"></div>
-<div class="stars-layer stars-large" aria-hidden="true"></div>
-
 <nav class="site-nav">
   <div class="nav-left">
     <a href="index.html" class="brand"><svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
-      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18">
-        <animate attributeName="opacity" values="0.10;0.28;0.10" dur="2.4s" repeatCount="indefinite"/>
-      </path>
-      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="6 5">
-        <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="1.1s" repeatCount="indefinite"/>
-      </path>
-      <circle cx="10" cy="30" r="3" fill="#FF7A9C">
-        <animate attributeName="r" values="2.4;3.6;2.4" dur="1.6s" repeatCount="indefinite"/>
-      </circle>
-      <circle cx="52" cy="30" r="3" fill="#FF7A9C">
-        <animate attributeName="r" values="3.6;2.4;3.6" dur="1.6s" repeatCount="indefinite"/>
-      </circle>
+      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18"></path>
+      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="6 5"></path>
+      <circle cx="10" cy="30" r="3" fill="#FF7A9C"></circle>
+      <circle cx="52" cy="30" r="3" fill="#FF7A9C"></circle>
     </svg> Wavelength</a>
     <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
   </div>
@@ -55,16 +43,16 @@
 </nav>
 
 <div class="app-wrap">
-  <div class="app" style="max-width:480px;">
+  <div class="app">
     <div class="card">
       <div class="avatar-edit-wrap">
-        <div class="avatar" id="avatar-preview" style="width:84px; height:84px; font-size:32px; margin:0 auto 16px;">?</div>
+        <div class="avatar" id="avatar-preview">?</div>
         <label for="avatar-input" class="avatar-edit-btn" title="Change photo">✎</label>
         <input type="file" id="avatar-input" accept="image/*" style="display:none;" />
       </div>
 
-      <h1 id="profile-display-name" style="text-align:center; margin-bottom:4px;">Your Profile</h1>
-      <p class="sub" id="profile-meta" style="text-align:center; margin-bottom:18px;">Registered Member</p>
+      <h1 id="profile-display-name" style="text-align:center; margin-bottom:4px;">Profile</h1>
+      <p class="sub" style="text-align:center; margin-bottom:20px;">Registered Member</p>
 
       <div class="profile-stats">
         <div class="profile-stat">
@@ -79,13 +67,13 @@
       </div>
 
       <div class="field">
-        <label>Age <span class="optional">(18-99, optional)</span></label>
+        <label>Age <span style="font-weight:400;text-transform:none;">(18-99, optional)</span></label>
         <input type="number" id="prof-age" min="18" max="99" class="text-input" placeholder="Age" />
       </div>
 
       <div class="field">
-        <label>Bio <span class="optional">(Max 160 characters)</span></label>
-        <textarea id="prof-bio" class="text-input" style="min-height:80px; resize:vertical;" maxlength="160" placeholder="Tell strangers something interesting..."></textarea>
+        <label>Bio <span style="font-weight:400;text-transform:none;">(Max 160 characters)</span></label>
+        <textarea id="prof-bio" class="text-input" maxlength="160" placeholder="A little about yourself..."></textarea>
       </div>
 
       <p class="form-error" id="form-error"></p>
@@ -97,14 +85,12 @@
 </div>
 
 <script>
-  const API_BASE = "";
-
+  const API_BASE = '';
   function getAuth(){
     const token = localStorage.getItem('wl_auth_token');
     const username = localStorage.getItem('wl_username');
     return token && username ? { token, username } : null;
   }
-
   const auth = getAuth();
   if(!auth) window.location.href = 'login.html';
 
@@ -123,7 +109,6 @@
   const errorEl = document.getElementById('form-error');
   const successEl = document.getElementById('form-success');
   const saveBtn = document.getElementById('save-btn');
-
   let base64Avatar = '';
 
   async function loadProfile(){
@@ -150,7 +135,7 @@
       } else {
         avatarPreview.textContent = (data.username || '?')[0].toUpperCase();
       }
-    } catch(err){
+    } catch {
       errorEl.textContent = 'Could not load profile details.';
     }
   }
@@ -168,8 +153,7 @@
         let w = img.width, h = img.height;
         if(w > h){ h = (h / w) * maxDim; w = maxDim; }
         else { w = (w / h) * maxDim; h = maxDim; }
-        canvas.width = w;
-        canvas.height = h;
+        canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
         base64Avatar = canvas.toDataURL('image/jpeg', 0.8);
@@ -213,7 +197,7 @@
         }
         document.getElementById('profile-display-name').textContent = data.username;
       }
-    } catch(err){
+    } catch {
       errorEl.textContent = 'Server error updating profile.';
     } finally {
       saveBtn.disabled = false;
