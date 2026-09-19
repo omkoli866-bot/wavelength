@@ -255,6 +255,235 @@ a{color:inherit; text-decoration: none;}
   transition:color .15s ease;
 }
 .site-nav .links a:not(.signal-cta-btn):hover{color:var(--text);}
+
+/* ===== 3-bar hamburger button (opens the slide-out drawer) ===== */
+.menu-btn{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:4px;
+  width:32px;
+  height:32px;
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  flex:none;
+  padding:0;
+}
+.menu-btn span{
+  display:block;
+  width:20px;
+  height:2px;
+  border-radius:2px;
+  background:var(--text);
+  transition:transform .25s ease, opacity .2s ease;
+}
+.menu-btn.open span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+.menu-btn.open span:nth-child(2){ opacity:0; }
+.menu-btn.open span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
+
+/* ===== Slide-out drawer menu ===== */
+.drawer-backdrop{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(6,7,11,0.6);
+  z-index:90;
+}
+.drawer-backdrop.show{ display:block; }
+.drawer{
+  position:fixed;
+  top:0;
+  left:0;
+  bottom:0;
+  width:280px;
+  max-width:82vw;
+  background:var(--panel);
+  border-right:1px solid var(--line);
+  z-index:100;
+  transform:translateX(-100%);
+  transition:transform .25s ease;
+  display:flex;
+  flex-direction:column;
+  padding:20px;
+  overflow-y:auto;
+}
+.drawer.open{ transform:translateX(0); }
+.drawer-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:22px;
+}
+.drawer-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+  font-size:14px;
+  color:var(--text);
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+}
+.drawer-close{
+  background:transparent;
+  border:none;
+  color:var(--muted);
+  font-size:16px;
+  cursor:pointer;
+  width:28px;
+  height:28px;
+  border-radius:8px;
+}
+.drawer-close:hover{ background:var(--panel-2); color:var(--text); }
+.drawer-links{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.drawer-link{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:11px 12px;
+  border-radius:10px;
+  color:var(--text);
+  text-decoration:none;
+  font-size:14.5px;
+  transition:background .15s ease;
+}
+.drawer-link:hover{ background:var(--panel-2); color:var(--signal); }
+.drawer-separator{
+  border:none;
+  border-top:1px solid var(--line);
+  margin:10px 0;
+}
+
+/* ===== "Tune In Now" nav CTA pill ===== */
+.signal-cta-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  text-decoration:none;
+  background:var(--signal);
+  color:#fff;
+  font-weight:700;
+  font-size:13.5px;
+  padding:9px 16px;
+  border-radius:999px;
+  border:1.5px solid var(--ink);
+  box-shadow:2px 2px 0 var(--rose);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.signal-cta-btn:hover{
+  transform:translate(-1px,-1px);
+  box-shadow:3px 3px 0 var(--rose);
+}
+.btn-pulse-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#fff;
+  animation:typing-bounce 1s ease-in-out infinite;
+}
+@media (max-width:760px){
+  .signal-cta-btn span:not(.btn-pulse-dot){ display:none; }
+  .signal-cta-btn{ padding:9px 11px; }
+}
+
+/* ===== "The Protocol" description cards ===== */
+.desc-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:18px;
+}
+@media (max-width:800px){
+  .desc-grid{ grid-template-columns:1fr; }
+}
+.desc-card{
+  position:relative;
+  background:linear-gradient(180deg, var(--panel), var(--panel-2));
+  border-radius:16px;
+  padding:24px 20px;
+  overflow:hidden;
+}
+.desc-card-glow-pill{
+  position:absolute;
+  top:-30px;
+  left:50%;
+  transform:translateX(-50%);
+  width:120px;
+  height:60px;
+  background:radial-gradient(ellipse, rgba(47,107,255,0.35), transparent 70%);
+  pointer-events:none;
+}
+.desc-card-icon{
+  font-size:26px;
+  margin-bottom:12px;
+}
+.desc-card h3{
+  font-size:16px;
+  margin:0 0 8px;
+  color:var(--text);
+}
+.desc-card p{
+  margin:0;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.55;
+}
+
+/* ===== Giant animated Wavelength footer banner ===== */
+.giant-wavelength-banner{
+  position:relative;
+  text-align:center;
+  padding:50px 24px 30px;
+  overflow:hidden;
+}
+.gwb-glow{
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:80%;
+  max-width:900px;
+  height:140px;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse, rgba(73,214,196,0.14), transparent 70%);
+  pointer-events:none;
+}
+.gwb-text{
+  position:relative;
+  font-family:'Bangers', cursive;
+  font-size:clamp(40px, 10vw, 96px);
+  color:var(--panel-2);
+  -webkit-text-stroke:1px var(--line);
+  letter-spacing:0.03em;
+  line-height:1;
+}
+.gwb-sub{
+  position:relative;
+  color:var(--muted);
+  font-size:11px;
+  letter-spacing:0.25em;
+  text-transform:uppercase;
+  margin-top:8px;
+}
+
+/* ===== Scroll-reveal fade-in for cards ===== */
+.reveal{
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity .5s ease, transform .5s ease;
+}
+.reveal.in{
+  opacity:1;
+  transform:none;
+}
+@media (prefers-reduced-motion: reduce){
+  .reveal{ opacity:1; transform:none; transition:none; }
+}
+
 .back-btn{
   background:transparent;
   border:none;
