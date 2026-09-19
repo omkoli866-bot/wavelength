@@ -4,238 +4,121 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Wavelength — talk to someone new</title>
-<meta name="description" content="Anonymous, random 1-on-1 text chat. No account, no history — just a conversation with a stranger." />
-<meta property="og:title" content="Wavelength — talk to someone new" />
-<meta property="og:description" content="Anonymous, random 1-on-1 text chat. No account, no history — just a conversation with a stranger." />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://wavelength-jm4y.onrender.com/" />
-<meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Wavelength — talk to someone new" />
-<meta name="twitter:description" content="Anonymous, random 1-on-1 text chat. No account, no history — just a conversation with a stranger." />
-<link rel="canonical" href="https://wavelength-jm4y.onrender.com/" />
+<meta name="description" content="Anonymous, random 1-on-1 text and video chat. No account, no history." />
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<div class="stars-layer stars-small" aria-hidden="true"></div>
-<div class="stars-layer stars-medium" aria-hidden="true"></div>
-<div class="stars-layer stars-large" aria-hidden="true"></div>
-
-<!-- Slide-out Drawer Menu (Triggered by 3 Bars) -->
-<div class="drawer-backdrop" id="drawer-backdrop"></div>
-<aside class="drawer" id="side-drawer" aria-label="Slide Menu">
-  <div class="drawer-header">
-    <div class="drawer-title">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg>
-      Navigation
-    </div>
-    <button class="drawer-close" id="drawer-close-btn" aria-label="Close menu">✕</button>
-  </div>
-  <div class="drawer-links">
-    <a href="profile.html" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-      Profile
-    </a>
-    <a href="chat.html?open=recent" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
-      Recent Chats
-    </a>
-    <a href="friends.html" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/></svg>
-      Friends
-    </a>
-    <hr class="drawer-separator">
-    <a href="chat.html?mode=text" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Text Chat
-    </a>
-    <a href="chat.html?mode=video" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-      Video Chat
-    </a>
-    <hr class="drawer-separator">
-    <a href="guidelines.html" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-      Guidelines
-    </a>
-    <a href="privacy.html" class="drawer-link">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-      Privacy Policy
-    </a>
-  </div>
-</aside>
+<body class="has-siderail">
+<nav class="side-rail" aria-label="Quick access">
+  <a href="profile.html" class="side-rail-link" title="Profile">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+  </a>
+  <a href="chat.html?open=recent" class="side-rail-link" title="Recent Chats">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+  </a>
+  <a href="friends.html" class="side-rail-link" title="Friends">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><circle cx="18" cy="9" r="2.4"/><path d="M15.5 14.2c2.6.4 4.5 2 4.5 4.3"/></svg>
+  </a>
+</nav>
 
 <nav class="site-nav">
   <div class="nav-left">
-    <!-- 3-Bar Hamburger Button -->
-    <button class="menu-btn" id="menu-toggle-btn" aria-label="Toggle navigation">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-    <a href="index.html" class="brand"><svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
-      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18">
-        <animate attributeName="opacity" values="0.10;0.28;0.10" dur="2.4s" repeatCount="indefinite"/>
-      </path>
-      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="6 5">
-        <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="1.1s" repeatCount="indefinite"/>
-      </path>
-      <circle cx="10" cy="30" r="3" fill="#FF7A9C">
-        <animate attributeName="r" values="2.4;3.6;2.4" dur="1.6s" repeatCount="indefinite"/>
-      </circle>
-      <circle cx="52" cy="30" r="3" fill="#FF7A9C">
-        <animate attributeName="r" values="3.6;2.4;3.6" dur="1.6s" repeatCount="indefinite"/>
-      </circle>
-    </svg> Wavelength</a>
+    <a href="index.html" class="brand">
+      <svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
+        <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18"></path>
+        <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="6 5"></path>
+        <circle cx="10" cy="30" r="3" fill="#FF7A9C"></circle>
+        <circle cx="52" cy="30" r="3" fill="#FF7A9C"></circle>
+      </svg> Wavelength
+    </a>
   </div>
   <div class="links">
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
+    <a href="friends.html" id="nav-friends" style="display:none;">Friends</a>
     <a href="login.html" id="nav-login">Sign in</a>
-    <!-- "Tune In Now" Nav CTA Button -->
-    <a href="chat.html" class="signal-cta-btn nav-cta">
-      <span class="btn-pulse-dot"></span>
-      <span>Tune In Now</span>
-      <span style="font-size: 15px; line-height: 1;">→</span>
-    </a>
+    <a href="chat.html" class="cta">Start chatting</a>
   </div>
 </nav>
 
 <header class="hero">
-  <div class="hero-rings" aria-hidden="true"><span></span><span></span><span></span></div>
-
   <div class="eyebrow"><span class="pulse-dot"></span> <span id="eyebrow-text">strangers online now</span></div>
   <h1>Somewhere out there,<br>someone's on the <span class="accent">same wavelength.</span></h1>
   <p class="lead">Pick who you'd like to talk to, get matched instantly, and have a real conversation with a stranger. No profile, no history, no pressure.</p>
 
-  <!-- Restored Original Mode Cards Layout -->
   <div class="mode-cards">
     <a href="chat.html?mode=text" class="mode-card mode-card-text">
       <span class="mode-card-icon">
-        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
-          <path d="M6 10 h28 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 H16 l-7 6 v-6 H6 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z" fill="none" stroke="#2F6BFF" stroke-width="2"/>
-          <path d="M9 19 Q13 13 17 19 T25 19" fill="none" stroke="#2F6BFF" stroke-width="2" stroke-linecap="round"/>
+        <svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true">
+          <path d="M6 10 h28 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 H16 l-7 6 v-6 H6 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z" fill="none" stroke="#2F6BFF" stroke-width="2.2"/>
+          <path d="M9 19 Q13 13 17 19 T25 19" fill="none" stroke="#2F6BFF" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
       </span>
       <span class="mode-card-title">Text Chat</span>
       <span class="mode-card-desc">Type it out, no camera needed</span>
     </a>
+
     <a href="chat.html?mode=video" class="mode-card mode-card-video">
       <span class="mode-card-icon">
-        <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
-          <rect x="4" y="10" width="22" height="20" rx="5" fill="none" stroke="#FF3B4E" stroke-width="2"/>
-          <path d="M26 17 L35 12 V28 L26 23 Z" fill="none" stroke="#FF3B4E" stroke-width="2" stroke-linejoin="round"/>
-          <circle cx="15" cy="20" r="4" fill="none" stroke="#FF3B4E" stroke-width="1.6"/>
+        <svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true">
+          <rect x="4" y="10" width="22" height="20" rx="5" fill="none" stroke="#FF3B4E" stroke-width="2.2"/>
+          <path d="M26 17 L35 12 V28 L26 23 Z" fill="none" stroke="#FF3B4E" stroke-width="2.2" stroke-linejoin="round"/>
+          <circle cx="15" cy="20" r="4" fill="none" stroke="#FF3B4E" stroke-width="1.8"/>
         </svg>
       </span>
       <span class="mode-card-title">Video Chat</span>
       <span class="mode-card-desc">Face to face, camera and mic</span>
     </a>
   </div>
-  <p class="fineprint">18+ only · No sign-up required · <a href="guidelines.html">Read the guidelines</a></p>
 
-  <div class="activity-ticker"><span class="line" id="ticker-line"></span></div>
-
-  <div class="signal-strip" aria-hidden="true">
-    <div class="signal-glow"></div>
-    <div class="signal-bars">
-      <span style="animation-delay:0.0s"></span>
-      <span style="animation-delay:0.045s"></span>
-      <span style="animation-delay:0.09s"></span>
-      <span style="animation-delay:0.135s"></span>
-      <span style="animation-delay:0.18s"></span>
-      <span style="animation-delay:0.225s"></span>
-      <span style="animation-delay:0.27s"></span>
-      <span style="animation-delay:0.315s"></span>
-      <span style="animation-delay:0.36s"></span>
-      <span style="animation-delay:0.405s"></span>
-      <span style="animation-delay:0.45s"></span>
-      <span style="animation-delay:0.495s"></span>
-      <span style="animation-delay:0.54s"></span>
-      <span style="animation-delay:0.585s"></span>
-      <span style="animation-delay:0.63s"></span>
-      <span style="animation-delay:0.675s"></span>
-      <span style="animation-delay:0.72s"></span>
-      <span style="animation-delay:0.765s"></span>
-      <span style="animation-delay:0.81s"></span>
-      <span style="animation-delay:0.855s"></span>
-      <span style="animation-delay:0.9s"></span>
-    </div>
-  </div>
+  <p class="fineprint">18+ only · No sign-up required · <a href="guidelines.html" style="text-decoration:underline;">Read the guidelines</a></p>
+  <div class="activity-ticker"><span id="ticker-line">first come, first paired.</span></div>
 </header>
 
-<!-- How It Works Section -->
 <section class="section">
   <div class="kicker">How it works</div>
   <h2>Three steps, no waiting room.</h2>
   <div class="steps">
-    <div class="step-card reveal">
-      <span class="num">01</span>
+    <div class="step-card">
+      <div class="num">01</div>
       <h3>Set your signal</h3>
       <p>Say who you are and who you'd like to talk to — anyone, or a specific match.</p>
     </div>
-    <div class="step-card reveal">
-      <span class="num">02</span>
+    <div class="step-card">
+      <div class="num">02</div>
       <h3>Get paired instantly</h3>
       <p>Our matcher connects you with someone compatible the moment they're online too.</p>
     </div>
-    <div class="step-card reveal">
-      <span class="num">03</span>
+    <div class="step-card">
+      <div class="num">03</div>
       <h3>Talk, skip, or leave</h3>
       <p>Chat as long as you like. Not feeling it? Skip to a new stranger in one tap.</p>
     </div>
   </div>
 </section>
 
-<!-- Additional Animated Description Section -->
-<section class="section">
-  <div class="kicker">The Protocol</div>
-  <h2>Designed for absolute spontaneity.</h2>
-  <div class="desc-grid">
-    <div class="desc-card reveal">
-      <div class="desc-card-glow-pill"></div>
-      <div class="desc-card-icon">⚡</div>
-      <h3>Zero-Trace Memory</h3>
-      <p>Conversations exist only in real-time RAM. The moment you disconnect, every word and session trace vanishes completely.</p>
-    </div>
-    <div class="desc-card reveal">
-      <div class="desc-card-glow-pill"></div>
-      <div class="desc-card-icon">🎯</div>
-      <h3>Interest Matching</h3>
-      <p>Select your favorite topics to tune your frequency. Our algorithm matches you with kindred spirits across the globe instantly.</p>
-    </div>
-    <div class="desc-card reveal">
-      <div class="desc-card-glow-pill"></div>
-      <div class="desc-card-icon">🛡️</div>
-      <h3>Encrypted P2P</h3>
-      <p>Video streams tunnel directly between browsers via WebRTC, bypassing central recording servers for ultimate privacy.</p>
-    </div>
-  </div>
-</section>
-
-<!-- Safety Strip Section -->
 <section class="section">
   <div class="kicker">Built with care</div>
   <h2>Anonymous doesn't mean unsafe.</h2>
   <div class="safety-strip">
-    <div class="safety-item reveal">
+    <div class="safety-item">
       <div class="ico">↺</div>
       <div>
         <h4>Nothing is saved</h4>
-        <p>Messages exist only for the length of your chat. Nothing is logged to a profile.</p>
+        <p>Guest messages exist only for the chat. Nothing is logged to a profile.</p>
       </div>
     </div>
-    <div class="safety-item reveal">
+    <div class="safety-item">
       <div class="ico">⚑</div>
       <div>
         <h4>Report in one tap</h4>
         <p>See something off? Report and leave instantly — no explanation required.</p>
       </div>
     </div>
-    <div class="safety-item reveal">
+    <div class="safety-item">
       <div class="ico">→</div>
       <div>
         <h4>Skip anytime</h4>
@@ -245,15 +128,8 @@
   </div>
 </section>
 
-<!-- Unique Giant Animated Signature Footer Name -->
-<div class="giant-wavelength-banner">
-  <div class="gwb-glow"></div>
-  <div class="gwb-text">WAVELENGTH</div>
-  <div class="gwb-sub">THE ANONYMOUS FREQUENCY NETWORK</div>
-</div>
-
 <footer class="site-footer">
-  <div class="fbrand">© 2026 Wavelength. Not affiliated with any other chat service.</div>
+  <div class="fbrand">© 2026 Wavelength.</div>
   <div class="flinks">
     <a href="guidelines.html">Guidelines</a>
     <a href="privacy.html">Privacy</a>
@@ -262,71 +138,25 @@
 </footer>
 
 <script>
-  // 3-Bar Drawer Toggle Logic
-  const menuBtn = document.getElementById('menu-toggle-btn');
-  const drawer = document.getElementById('side-drawer');
-  const drawerBackdrop = document.getElementById('drawer-backdrop');
-  const drawerCloseBtn = document.getElementById('drawer-close-btn');
-
-  function toggleDrawer(open) {
-    const isOpen = open !== undefined ? open : !drawer.classList.contains('open');
-    drawer.classList.toggle('open', isOpen);
-    drawerBackdrop.classList.toggle('show', isOpen);
-    if (menuBtn) menuBtn.classList.toggle('open', isOpen);
-  }
-
-  if (menuBtn) menuBtn.addEventListener('click', () => toggleDrawer());
-  if (drawerBackdrop) drawerBackdrop.addEventListener('click', () => toggleDrawer(false));
-  if (drawerCloseBtn) drawerCloseBtn.addEventListener('click', () => toggleDrawer(false));
-
-  const BACKEND_URL = "";
-
   async function pollStats(){
-    try{
-      const res = await fetch((BACKEND_URL || '') + '/stats');
+    try {
+      const res = await fetch('/stats');
       const data = await res.json();
       const el = document.getElementById('eyebrow-text');
       if (el) el.textContent = `${data.online} ${data.online === 1 ? 'person' : 'people'} online now`;
-    }catch(e){ }
+    } catch {}
   }
   pollStats();
   setInterval(pollStats, 5000);
 
-  const tickerLines = [
-    "first come, first paired.",
-    "no waiting rooms. no small talk you didn't ask for.",
-    "say less, mean more.",
-    "not your frequency? skip and retune.",
-  ];
-  const tickerEl = document.getElementById('ticker-line');
-  let tIdx = 0;
-  function rotateTicker(){
-    if(!tickerEl) return;
-    tickerEl.classList.remove('show');
-    setTimeout(()=>{
-      tickerEl.textContent = tickerLines[tIdx % tickerLines.length];
-      tickerEl.classList.add('show');
-      tIdx++;
-    }, 400);
-  }
-  rotateTicker();
-  setInterval(rotateTicker, 3600);
-
-  const revealEls = document.querySelectorAll('.reveal');
-  const revealObserver = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting) entry.target.classList.add('in');
-    });
-  }, { threshold: 0.15 });
-  revealEls.forEach(el=> revealObserver.observe(el));
-
-  (function(){
-    var token = localStorage.getItem('wl_auth_token');
-    var username = localStorage.getItem('wl_username');
-    var navLogin = document.getElementById('nav-login');
-    if(token && username && navLogin){
-      navLogin.textContent = username;
-      navLogin.href = 'profile.html';
+  (function initAuth(){
+    const token = localStorage.getItem('wl_auth_token');
+    const username = localStorage.getItem('wl_username');
+    const navLogin = document.getElementById('nav-login');
+    const navFriends = document.getElementById('nav-friends');
+    if(token && username){
+      if(navLogin){ navLogin.textContent = username; navLogin.href = 'profile.html'; }
+      if(navFriends) navFriends.style.display = '';
     }
   })();
 </script>
