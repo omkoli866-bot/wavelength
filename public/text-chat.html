@@ -37,28 +37,47 @@
 </nav>
 
 <section class="mode-intro">
-  <!-- Left Side: Copy and feature cards -->
+  <!-- Left Column: Copy & High-Tech Feature Cards -->
   <div class="mode-intro-text">
     <div class="mode-badge-pill">
       <span class="pulse-dot"></span> Signal Ready
     </div>
-    <h1>Direct <span>Text</span> Chat</h1>
+    <h1>DIRECT <span>TEXT</span> CHAT</h1>
     <p class="mode-intro-desc">
       Zero setup. Zero identity footprint. Jump into instant, end-to-end relayed conversations with strangers matching your vibe and interests.
     </p>
 
     <div class="mode-feature-grid">
-      <div class="mode-feature-item">
-        <span class="icon">⚡</span> Instant Pairing
+      <div class="mode-feature-card">
+        <div class="feature-icon-badge blue">⚡</div>
+        <div class="feature-meta">
+          <span class="title">Instant Match</span>
+          <span class="desc">Paired in &lt; 2s</span>
+        </div>
       </div>
-      <div class="mode-feature-item">
-        <span class="icon">🔒</span> In-Memory Only
+
+      <div class="mode-feature-card">
+        <div class="feature-icon-badge gold">🔒</div>
+        <div class="feature-meta">
+          <span class="title">In-Memory Only</span>
+          <span class="desc">Zero logs saved</span>
+        </div>
       </div>
-      <div class="mode-feature-item">
-        <span class="icon">🏷</span> Shared Tags
+
+      <div class="mode-feature-card">
+        <div class="feature-icon-badge cyan">🏷</div>
+        <div class="feature-meta">
+          <span class="title">Interest Sync</span>
+          <span class="desc">Shared vibes</span>
+        </div>
       </div>
-      <div class="mode-feature-item">
-        <span class="icon">⏭</span> 1-Click Skip
+
+      <div class="mode-feature-card">
+        <div class="feature-icon-badge red">⏭</div>
+        <div class="feature-meta">
+          <span class="title">1-Click Skip</span>
+          <span class="desc">Never trapped</span>
+        </div>
       </div>
     </div>
 
@@ -67,7 +86,7 @@
     </a>
   </div>
 
-  <!-- Right Side: Live Interactive Chat Terminal Mockup -->
+  <!-- Right Column: Interactive Terminal Preview -->
   <div class="terminal-card">
     <div class="terminal-topbar">
       <div class="terminal-dots">
@@ -90,10 +109,9 @@
       </div>
     </div>
 
-    <!-- Interactive test trigger bar -->
     <div class="terminal-interactive">
       <span style="font-size:11px; color:var(--muted); margin-right:4px;">Test:</span>
-      <button class="terminal-chip" onclick="simulateMsg('lol that’s valid!')">"That's valid"</button>
+      <button class="terminal-chip" onclick="simulateMsg('That\'s valid!')">"That's valid"</button>
       <button class="terminal-chip" onclick="simulateMsg('What movies do you recommend?')">Ask topic</button>
       <button class="terminal-chip" onclick="simulateMsg('🔥')">Send 🔥</button>
     </div>
