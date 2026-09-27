@@ -319,16 +319,15 @@ app.get('/api/history', requireAuth, async (req, res) => {
   try {
     const myId = req.user.sub;
     const messages = await Message.aggregate([
-      { $match: { pairKey: { $regex: myId } } },
+      { $match: { pairKey: {$regex: myId } } },
       { $sort: { createdAt: -1 } },
-      {
-        $group: {
+      {$group: {
           _id: '$pairKey',
           lastMessage: { $first: '$$ROOT' },
         },
       },
       { $sort: { 'lastMessage.createdAt': -1 } },
-      { $limit: 50 },
+      {$limit: 50 },
     ]);
 
     const conversations = messages.map((m) => {
