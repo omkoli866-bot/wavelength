@@ -37,34 +37,65 @@
 </nav>
 
 <section class="mode-intro">
+  <!-- Left Side: Copy and feature cards -->
   <div class="mode-intro-text">
-    <div class="mode-intro-icon">
-      <svg width="32" height="32" viewBox="0 0 40 40" aria-hidden="true">
-        <path d="M6 10 h28 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 H16 l-7 6 v-6 H6 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z" fill="none" stroke="#2F6BFF" stroke-width="2.4"/>
-        <path d="M9 19 Q13 13 17 19 T25 19" fill="none" stroke="#2F6BFF" stroke-width="2.4" stroke-linecap="round"/>
-      </svg>
+    <div class="mode-badge-pill">
+      <span class="pulse-dot"></span> Signal Ready
     </div>
-    <h1>Text Chat</h1>
-    <p class="mode-intro-desc">Meet someone new in seconds. Get matched with a random stranger and just talk — no camera, no profile, nothing to set up. Share an interest or two and we'll try to match you with someone who's into the same things.</p>
-    <ul class="mode-intro-points">
-      <li>Anonymous — no account needed to start</li>
-      <li>Skip anytime, no explanation required</li>
-      <li>Optional: add interests to match with like-minded people</li>
-      <li>Register (free) to save conversations and add friends</li>
-    </ul>
-    <a href="chat.html?mode=text" class="btn" style="display:inline-block; width:auto; padding:14px 34px;">Start Text Chat →</a>
+    <h1>Direct <span>Text</span> Chat</h1>
+    <p class="mode-intro-desc">
+      Zero setup. Zero identity footprint. Jump into instant, end-to-end relayed conversations with strangers matching your vibe and interests.
+    </p>
+
+    <div class="mode-feature-grid">
+      <div class="mode-feature-item">
+        <span class="icon">⚡</span> Instant Pairing
+      </div>
+      <div class="mode-feature-item">
+        <span class="icon">🔒</span> In-Memory Only
+      </div>
+      <div class="mode-feature-item">
+        <span class="icon">🏷</span> Shared Tags
+      </div>
+      <div class="mode-feature-item">
+        <span class="icon">⏭</span> 1-Click Skip
+      </div>
+    </div>
+
+    <a href="chat.html?mode=text" class="btn" style="display:inline-block; width:auto; padding:15px 36px; text-decoration:none;">
+      Start Text Chat →
+    </a>
   </div>
 
-  <div class="mode-intro-preview">
-    <div class="mode-preview">
-      <div class="floating-words-preview">
-        <span class="fw fw-1">hey!</span>
-        <span class="fw fw-2">hii 👋</span>
-        <span class="fw fw-3">lol same</span>
-        <span class="fw fw-4">what's up?</span>
-        <span class="fw fw-5">haha true</span>
-        <span class="fw fw-6">no way!</span>
+  <!-- Right Side: Live Interactive Chat Terminal Mockup -->
+  <div class="terminal-card">
+    <div class="terminal-topbar">
+      <div class="terminal-dots">
+        <span class="terminal-dot r"></span>
+        <span class="terminal-dot y"></span>
+        <span class="terminal-dot g"></span>
       </div>
+      <div class="terminal-partner">
+        <span class="terminal-live-dot"></span> Connected: stranger_88
+      </div>
+      <div style="font-size:11px; color:var(--muted); font-family:monospace;">88.4 MHz</div>
+    </div>
+
+    <div class="terminal-body" id="demo-chat-box">
+      <div class="t-bubble them">Hey! Anyone out there? 👋</div>
+      <div class="t-bubble me">Yeah! What music have you had on repeat lately?</div>
+      <div class="t-bubble them">Deftones & some old 90s bangers haha</div>
+      <div class="t-typing" id="demo-typing">
+        <i></i><i></i><i></i>
+      </div>
+    </div>
+
+    <!-- Interactive test trigger bar -->
+    <div class="terminal-interactive">
+      <span style="font-size:11px; color:var(--muted); margin-right:4px;">Test:</span>
+      <button class="terminal-chip" onclick="simulateMsg('lol that’s valid!')">"That's valid"</button>
+      <button class="terminal-chip" onclick="simulateMsg('What movies do you recommend?')">Ask topic</button>
+      <button class="terminal-chip" onclick="simulateMsg('🔥')">Send 🔥</button>
     </div>
   </div>
 </section>
@@ -79,6 +110,28 @@
 </footer>
 
 <script>
+  function simulateMsg(text) {
+    const box = document.getElementById('demo-chat-box');
+    const typing = document.getElementById('demo-typing');
+    const bubble = document.createElement('div');
+    bubble.className = 't-bubble me';
+    bubble.textContent = text;
+    box.insertBefore(bubble, typing);
+    box.scrollTop = box.scrollHeight;
+
+    typing.style.display = 'inline-flex';
+    setTimeout(() => {
+      typing.style.display = 'none';
+      const replies = ["Haha right?", "No way!", "100% agreed.", "Fair point!"];
+      const reply = document.createElement('div');
+      reply.className = 't-bubble them';
+      reply.textContent = replies[Math.floor(Math.random() * replies.length)];
+      box.appendChild(reply);
+      box.appendChild(typing);
+      box.scrollTop = box.scrollHeight;
+    }, 1200);
+  }
+
   (function(){
     var token = localStorage.getItem('wl_auth_token');
     var username = localStorage.getItem('wl_username');
