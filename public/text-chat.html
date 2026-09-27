@@ -18,35 +18,30 @@
 
 <nav class="site-nav">
   <div class="nav-left">
-    <a href="index.html" class="brand"><svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
-      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18">
-        <animate attributeName="opacity" values="0.10;0.28;0.10" dur="2.4s" repeatCount="indefinite"/>
-      </path>
-      <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="6 5">
-        <animate attributeName="stroke-dashoffset" from="0" to="-22" dur="1.1s" repeatCount="indefinite"/>
-      </path>
-      <circle cx="10" cy="30" r="3" fill="#FF7A9C">
-        <animate attributeName="r" values="2.4;3.6;2.4" dur="1.6s" repeatCount="indefinite"/>
-      </circle>
-      <circle cx="52" cy="30" r="3" fill="#FF7A9C">
-        <animate attributeName="r" values="3.6;2.4;3.6" dur="1.6s" repeatCount="indefinite"/>
-      </circle>
-    </svg> Wavelength</a>
+    <a href="index.html" class="brand">
+      <svg class="brand-icon" width="30" height="22" viewBox="0 0 64 48" aria-hidden="true">
+        <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="7" stroke-linecap="round" opacity="0.18"></path>
+        <path d="M10 30 Q17 12 24 30 T38 30 Q45 12 52 30" fill="none" stroke="#49D6C4" stroke-width="3.4" stroke-linecap="round" stroke-dasharray="6 5"></path>
+        <circle cx="10" cy="30" r="3" fill="#FF7A9C"></circle>
+        <circle cx="52" cy="30" r="3" fill="#FF7A9C"></circle>
+      </svg> Wavelength
+    </a>
     <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.assign('index.html')">← Back</button>
   </div>
   <div class="links">
     <a href="video-chat.html">Video Chat</a>
     <a href="guidelines.html">Guidelines</a>
     <a href="login.html" id="nav-login">Sign in</a>
+    <a href="chat.html?mode=text" class="cta">Start chatting</a>
   </div>
 </nav>
 
 <section class="mode-intro">
   <div class="mode-intro-text">
     <div class="mode-intro-icon">
-      <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
-        <path d="M6 10 h28 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 H16 l-7 6 v-6 H6 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z" fill="none" stroke="#2F6BFF" stroke-width="2"/>
-        <path d="M9 19 Q13 13 17 19 T25 19" fill="none" stroke="#2F6BFF" stroke-width="2" stroke-linecap="round"/>
+      <svg width="32" height="32" viewBox="0 0 40 40" aria-hidden="true">
+        <path d="M6 10 h28 a4 4 0 0 1 4 4 v10 a4 4 0 0 1 -4 4 H16 l-7 6 v-6 H6 a4 4 0 0 1 -4 -4 v-10 a4 4 0 0 1 4 -4 z" fill="none" stroke="#2F6BFF" stroke-width="2.4"/>
+        <path d="M9 19 Q13 13 17 19 T25 19" fill="none" stroke="#2F6BFF" stroke-width="2.4" stroke-linecap="round"/>
       </svg>
     </div>
     <h1>Text Chat</h1>
@@ -57,17 +52,19 @@
       <li>Optional: add interests to match with like-minded people</li>
       <li>Register (free) to save conversations and add friends</li>
     </ul>
-    <a href="chat.html?mode=text" class="btn" style="display:inline-block; text-decoration:none; width:auto; padding:14px 32px;">Start Text Chat →</a>
+    <a href="chat.html?mode=text" class="btn" style="display:inline-block; width:auto; padding:14px 34px;">Start Text Chat →</a>
   </div>
 
   <div class="mode-intro-preview">
-    <div class="mode-preview floating-words-preview" style="height:220px;">
-      <span class="fw fw-1">hey!</span>
-      <span class="fw fw-2">hii 👋</span>
-      <span class="fw fw-3">lol same</span>
-      <span class="fw fw-4">what's up?</span>
-      <span class="fw fw-5">haha true</span>
-      <span class="fw fw-6">no way!</span>
+    <div class="mode-preview">
+      <div class="floating-words-preview">
+        <span class="fw fw-1">hey!</span>
+        <span class="fw fw-2">hii 👋</span>
+        <span class="fw fw-3">lol same</span>
+        <span class="fw fw-4">what's up?</span>
+        <span class="fw fw-5">haha true</span>
+        <span class="fw fw-6">no way!</span>
+      </div>
     </div>
   </div>
 </section>
